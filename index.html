@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Andrew Robinson | Research, CV, and Cycling</title>
+  <title>Andrew Robinson | Research, CV, Cycling, and WBGT Tool</title>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -12,13 +12,13 @@
       --muted: #6b7280;
       --accent: #1d4ed8;
       --accent-dark: #1e3a8a;
+      --accent-soft: #eff6ff;
       --border: #dbe3ee;
       --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
       --max: 1140px;
     }
 
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -91,7 +91,10 @@
     .cycling-card,
     .cv-frame,
     .bio-card,
-    .contact-card {
+    .contact-card,
+    .tool-card,
+    .tool-panel,
+    .feature-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 18px;
@@ -221,8 +224,7 @@
     }
 
     .bio-card,
-    .contact-card,
-    .cv-frame {
+    .contact-card {
       padding: 28px;
     }
 
@@ -238,7 +240,8 @@
     }
 
     .publication-list,
-    .cycling-grid {
+    .cycling-grid,
+    .tool-feature-grid {
       display: grid;
       gap: 18px;
     }
@@ -295,6 +298,90 @@
       font-size: 0.96rem;
     }
 
+    .tool-card {
+      padding: 30px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .tool-kicker {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .tool-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+    }
+
+    .tool-card p {
+      margin-top: 0;
+      color: #334155;
+    }
+
+    .tool-note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: var(--accent-soft);
+      border: 1px solid #cfe0ff;
+      border-radius: 14px;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    .tool-panel {
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    .tool-panel h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .tool-panel p,
+    .tool-panel li {
+      color: #475569;
+      margin-top: 0;
+    }
+
+    .tool-panel ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .tool-feature-grid {
+      margin-top: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature-card {
+      padding: 20px;
+      background: #fcfdff;
+    }
+
+    .feature-card h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: #475569;
+      font-size: 0.96rem;
+    }
+
     .cv-frame {
       overflow: hidden;
       padding: 0;
@@ -324,7 +411,9 @@
 
     @media (max-width: 900px) {
       .hero,
-      .bio-grid {
+      .bio-grid,
+      .tool-grid,
+      .tool-feature-grid {
         grid-template-columns: 1fr;
       }
 
@@ -346,6 +435,10 @@
         width: 100px;
         height: 100px;
       }
+
+      iframe {
+        height: 70vh;
+      }
     }
   </style>
 </head>
@@ -358,6 +451,7 @@
         <a href="#bio">Bio</a>
         <a href="#publications">Publications</a>
         <a href="#cycling">Cycling</a>
+        <a href="#wbgt-tool">WBGT Tool</a>
         <a href="#cv">CV</a>
       </div>
     </nav>
@@ -380,10 +474,12 @@
         <p class="lead">
           I am a PhD candidate in Geography and Environment at the University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center, where I study heat stress, urban microclimates, and environmental modeling. My work focuses on high-resolution mapping of Wet Bulb Globe Temperature, land-surface controls on heat exposure, and applied climate research that connects environmental data to real-world risk. My dissertation defense is scheduled for March 30.
         </p>
+
         <div class="button-row">
           <a class="btn btn-primary" href="#cv">View CV</a>
           <a class="btn btn-secondary" href="#publications">See Publications</a>
           <a class="btn btn-secondary" href="#cycling">Cycling Page</a>
+          <a class="btn btn-secondary" href="#wbgt-tool">WBGT Prediction Tool</a>
         </div>
       </div>
 
@@ -394,7 +490,7 @@
         </div>
         <div class="panel">
           <h3>Affiliation</h3>
-          <p>Department of Geography and Environment, University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center</p>
+          <p>Department of Geography and Environment, University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center.</p>
         </div>
         <div class="panel">
           <h3>Current Focus</h3>
@@ -408,6 +504,7 @@
         <h2>Bio</h2>
         <p>A brief overview of my academic background, research interests, and current work.</p>
       </div>
+
       <div class="bio-grid">
         <div class="bio-card">
           <p>
@@ -417,7 +514,7 @@
             My current work sits at the intersection of urban climatology, environmental modeling, and applied geographic analysis. Across my dissertation and related projects, I have focused on quantifying how urban form can amplify or reduce heat stress, and developing methods that can support climate risk communication and local adaptation planning.
           </p>
           <p>
-            In addition to research, I am interested in reproducible scientific workflows and the use of observational and modeling approaches to answer practical environmental questions. 
+            In addition to research, I am interested in reproducible scientific workflows and the use of observational and modeling approaches to answer practical environmental questions.
           </p>
         </div>
 
@@ -513,6 +610,75 @@
           <img src="https://drive.google.com/thumbnail?id=1LdXxy8h7Ziafm09dSGmy3uXV7kzWxju8&sz=w1600" alt="Cycling photo 5" />
           <figcaption class="caption">Top step.</figcaption>
         </figure>
+      </div>
+    </section>
+
+    <section id="wbgt-tool">
+      <div class="section-header">
+        <h2>WBGT Prediction Tool</h2>
+        <p>
+          An interactive tool for estimating neighborhood-scale Wet Bulb Globe Temperature across Carrboro and Chapel Hill from broad-scale ambient conditions.
+        </p>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-kicker">Interactive Research Application</span>
+
+        <div class="tool-grid">
+          <div>
+            <h3>Downscaled WBGT prediction for Carrboro and Chapel Hill</h3>
+            <p>
+              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions such as the broader-scale reading you might see on your phone. It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
+            </p>
+            <p>
+              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application provides a downscaled estimate of how heat stress may differ from one part of town to another.
+            </p>
+            <p>
+              The model performs best when input conditions resemble one of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the observational framework and model design are most closely aligned with the underlying data.
+            </p>
+
+            <div class="tool-note">
+              Best use case: estimate likely afternoon WBGT patterns across Carrboro and Chapel Hill under conditions similar to those observed during the 2025 SERCC summer campaign.
+            </div>
+
+            <div class="button-row">
+              <a class="btn btn-primary" href="https://heat-stress-flask.onrender.com/" target="_blank" rel="noopener noreferrer">Open the WBGT Tool</a>
+            </div>
+          </div>
+
+          <div class="tool-panel">
+            <h4>What the tool does</h4>
+            <ul>
+              <li>Predicts WBGT at 100 m spatial resolution</li>
+              <li>Focuses on Carrboro and Chapel Hill</li>
+              <li>Uses broad ambient conditions as inputs</li>
+              <li>Downscales conditions to neighborhood-scale heat stress patterns</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tool-feature-grid">
+          <div class="feature-card">
+            <h4>Training data</h4>
+            <p>
+              Built from observations collected during the 2025 heat season citizen science campaign conducted by SERCC.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h4>When it is most accurate</h4>
+            <p>
+              The application is most reliable when weather inputs are similar to the 21 observation days included in the training data.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h4>Best prediction time</h4>
+            <p>
+              The tool is best used for afternoon conditions, with peak usefulness around 2:15 PM.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
