@@ -628,13 +628,13 @@
           <div>
             <h3>Downscaled WBGT prediction for Carrboro and Chapel Hill</h3>
             <p>
-              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions such as the broader-scale reading you might see on your phone. It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
+              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions (i.e., such as the broader-scale reading you might see on your phone). It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
             </p>
             <p>
-              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application provides a downscaled estimate of how heat stress may differ from one part of town to another.
+              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application uses machine learning to provided a high resolution estimate of how heat stress may differ between neighborhoods.
             </p>
             <p>
-              The model performs best when input conditions resemble one of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the observational framework and model design are most closely aligned with the underlying data.
+              The model performs best when input conditions resemble one or a combination of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the citizen science observations were made.
             </p>
 
             <div class="tool-note">
@@ -661,7 +661,7 @@
           <div class="feature-card">
             <h4>Training data</h4>
             <p>
-              Built from observations collected during the 2025 heat season citizen science campaign conducted by SERCC.
+              Built usuing machine learning, observations collected during the 2025 heat season citizen science campaign conducted by SERCC, and underlying land surface characteristics.
             </p>
           </div>
 
@@ -706,3 +706,4 @@
 </body>
 
 </html>
+
