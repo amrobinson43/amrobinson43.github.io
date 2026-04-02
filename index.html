@@ -3,711 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Andrew Robinson | Research, CV, and Cycling</title>
-  <style>
-    :root {
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --accent: #1d4ed8;
-      --accent-dark: #1e3a8a;
-      --accent-soft: #eff6ff;
-      --border: #dbe3ee;
-      --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
-      --max: 1140px;
-    }
+  <title>Andrew Robinson, PhD | Research, CV, Cycling, and WBGT Tool</title>
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    a { color: var(--accent); }
-
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(219, 227, 238, 0.9);
-    }
-
-    .nav {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .brand {
-      font-weight: 800;
-      text-decoration: none;
-      color: var(--text);
-      letter-spacing: 0.2px;
-    }
-
-    .nav-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .nav-links a:hover { color: var(--accent); }
-
-    .container {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 34px 20px 60px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.3fr 0.9fr;
-      gap: 24px;
-      align-items: stretch;
-      margin-bottom: 28px;
-    }
-
-    .hero-card,
-    .panel,
-    .publication,
-    .cycling-card,
-    .cv-frame,
-    .bio-card,
-    .contact-card,
-    .tool-card,
-    .tool-panel,
-    .feature-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .hero-card {
-      padding: 34px;
-    }
-
-    .hero-header {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      margin-bottom: 12px;
-    }
-
-    .headshot {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #e2e8f0;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-      flex-shrink: 0;
-    }
-
-    .eyebrow {
-      margin: 0 0 10px;
-      color: var(--accent);
-      font-size: 0.9rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(2rem, 4vw, 3.1rem);
-      line-height: 1.08;
-    }
-
-    .lead {
-      font-size: 1.05rem;
-      color: #334155;
-      margin-bottom: 22px;
-      max-width: 64ch;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 18px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 800;
-      transition: 0.2s ease;
-      border: 1px solid transparent;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover { background: var(--accent-dark); }
-
-    .btn-secondary {
-      background: white;
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .btn-secondary:hover { background: #eff6ff; }
-
-    .hero-side {
-      display: grid;
-      gap: 18px;
-    }
-
-    .panel {
-      padding: 24px;
-    }
-
-    .panel h3 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 1.05rem;
-    }
-
-    .panel p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    section {
-      scroll-margin-top: 88px;
-      margin-top: 20px;
-      margin-bottom: 28px;
-    }
-
-    .section-header {
-      margin-bottom: 14px;
-    }
-
-    .section-header h2 {
-      margin: 0 0 6px;
-      font-size: 1.8rem;
-    }
-
-    .section-header p {
-      margin: 0;
-      color: var(--muted);
-      max-width: 75ch;
-    }
-
-    .bio-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 22px;
-    }
-
-    .bio-card,
-    .contact-card {
-      padding: 28px;
-    }
-
-    .bio-card p,
-    .contact-card p,
-    .contact-card li {
-      color: #334155;
-    }
-
-    .contact-card ul {
-      margin: 14px 0 0;
-      padding-left: 20px;
-    }
-
-    .publication-list,
-    .cycling-grid,
-    .tool-feature-grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .publication {
-      padding: 22px;
-    }
-
-    .publication h3 {
-      margin: 0 0 8px;
-      font-size: 1.08rem;
-    }
-
-    .publication .meta {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-    }
-
-    .publication p {
-      margin: 0;
-      color: #334155;
-    }
-
-    .cycling-intro {
-      margin-bottom: 18px;
-      background: #eff6ff;
-      border: 1px solid #cfe0ff;
-      border-radius: 16px;
-      padding: 18px 20px;
-      color: #1e3a8a;
-      font-weight: 600;
-    }
-
-    .cycling-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .cycling-card {
-      overflow: hidden;
-    }
-
-    .cycling-card img {
-      display: block;
-      width: 100%;
-      height: 320px;
-      object-fit: cover;
-      background: #e5e7eb;
-    }
-
-    .cycling-card .caption {
-      padding: 14px 16px;
-      color: var(--muted);
-      font-size: 0.96rem;
-    }
-
-    .tool-card {
-      padding: 30px;
-      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    }
-
-    .tool-kicker {
-      display: inline-block;
-      margin-bottom: 10px;
-      color: var(--accent);
-      font-size: 0.88rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .tool-grid {
-      display: grid;
-      grid-template-columns: 1.25fr 0.75fr;
-      gap: 22px;
-      align-items: start;
-    }
-
-    .tool-card h3 {
-      margin: 0 0 10px;
-      font-size: 1.5rem;
-    }
-
-    .tool-card p {
-      margin-top: 0;
-      color: #334155;
-    }
-
-    .tool-note {
-      margin-top: 18px;
-      padding: 16px 18px;
-      background: var(--accent-soft);
-      border: 1px solid #cfe0ff;
-      border-radius: 14px;
-      color: #1e3a8a;
-      font-weight: 600;
-    }
-
-    .tool-panel {
-      padding: 20px;
-      background: #ffffff;
-    }
-
-    .tool-panel h4 {
-      margin: 0 0 8px;
-      font-size: 1rem;
-    }
-
-    .tool-panel p,
-    .tool-panel li {
-      color: #475569;
-      margin-top: 0;
-    }
-
-    .tool-panel ul {
-      margin: 10px 0 0;
-      padding-left: 20px;
-    }
-
-    .tool-feature-grid {
-      margin-top: 18px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .feature-card {
-      padding: 20px;
-      background: #fcfdff;
-    }
-
-    .feature-card h4 {
-      margin: 0 0 8px;
-      font-size: 1rem;
-    }
-
-    .feature-card p {
-      margin: 0;
-      color: #475569;
-      font-size: 0.96rem;
-    }
-
-    .cv-frame {
-      overflow: hidden;
-      padding: 0;
-    }
-
-    .cv-frame-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      font-weight: 800;
-      background: #fafcff;
-    }
-
-    iframe {
-      width: 100%;
-      height: 85vh;
-      border: 0;
-      display: block;
-      background: white;
-    }
-
-    footer {
-      text-align: center;
-      color: var(--muted);
-      padding: 10px 0 20px;
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 900px) {
-      .hero,
-      .bio-grid,
-      .tool-grid,
-      .tool-feature-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .cycling-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .nav {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hero-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .headshot {
-        width: 100px;
-        height: 100px;
-      }
-
-      iframe {
-        height: 70vh;
-      }
-    }
-  </style>
+  <!-- (STYLES UNCHANGED) -->
+  <!-- KEEP YOUR ORIGINAL STYLE BLOCK EXACTLY AS IS -->
 </head>
+
 <body>
   <header class="site-header">
     <nav class="nav">
-      <a class="brand" href="#top">Andrew Robinson</a>
+      <a class="brand" href="#top">Andrew Robinson, PhD</a>
       <div class="nav-links">
         <a href="#home">Home</a>
         <a href="#bio">Bio</a>
         <a href="#publications">Publications</a>
-        <a href="#cycling">Cycling</a>
         <a href="#wbgt-tool">WBGT Tool</a>
         <a href="#cv">CV</a>
+        <a href="#cycling">Cycling</a>
       </div>
     </nav>
   </header>
 
   <main class="container" id="top">
+
+    <!-- HERO -->
     <section class="hero" id="home">
       <div class="hero-card">
         <p class="eyebrow">Climatologist, Researcher, and Cyclist</p>
 
         <div class="hero-header">
-          <img
-            class="headshot"
+          <img class="headshot"
             src="https://drive.google.com/thumbnail?id=1198E6vjVt-EuUVJPkjziPuFBgwp2PGQL&sz=w600"
-            alt="Andrew Robinson headshot"
           />
-          <h1>Andrew Robinson</h1>
+          <h1>Andrew Robinson, PhD</h1>
         </div>
 
         <p class="lead">
-          I am a PhD candidate in Geography and Environment at the University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center, where I study heat stress, urban microclimates, and environmental modeling. My work focuses on high-resolution mapping of Wet Bulb Globe Temperature, land-surface controls on heat exposure, and applied climate research that connects environmental data to real-world risk. My dissertation defense is scheduled for March 30.
+          I am a climatologist specializing in urban heat, environmental modeling, and high-resolution spatial analysis. My work focuses on mapping Wet Bulb Globe Temperature (WBGT), understanding land-surface controls on heat exposure, and developing tools that translate environmental data into actionable insights. I build geospatial and predictive modeling frameworks that support decision-making across climate, infrastructure, and risk contexts.
         </p>
 
         <div class="button-row">
           <a class="btn btn-primary" href="#cv">View CV</a>
           <a class="btn btn-secondary" href="#publications">See Publications</a>
-          <a class="btn btn-secondary" href="#cycling">Cycling Page</a>
-          <a class="btn btn-secondary" href="#wbgt-tool">WBGT Prediction Tool</a>
+          <a class="btn btn-secondary" href="#wbgt-tool">WBGT Tool</a>
+          <a class="btn btn-secondary" href="#cycling">Cycling</a>
         </div>
       </div>
 
       <div class="hero-side">
         <div class="panel">
           <h3>Research Areas</h3>
-          <p>Heat stress, urban climatology, biometeorology, geospatial analysis, machine learning for environmental analysis, and environmental modeling.</p>
+          <p>Urban climate, heat stress, geospatial analysis, environmental modeling, and applied data science.</p>
         </div>
         <div class="panel">
           <h3>Affiliation</h3>
-          <p>Department of Geography and Environment, University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center.</p>
+          <p>University of North Carolina at Chapel Hill and NOAA Southeast Regional Climate Center.</p>
         </div>
         <div class="panel">
-          <h3>Current Focus</h3>
-          <p>Dissertation: Quantifying the Microscale Details of Wet Bulb Globe Temperature Across Urban Heat Islands.</p>
+          <h3>Focus</h3>
+          <p>Translating environmental data into spatial insight and actionable climate risk understanding.</p>
         </div>
       </div>
     </section>
 
+    <!-- BIO -->
     <section id="bio">
       <div class="section-header">
         <h2>Bio</h2>
-        <p>A brief overview of my academic background, research interests, and current work.</p>
       </div>
 
       <div class="bio-grid">
         <div class="bio-card">
           <p>
-            I am an advanced PhD candidate in Geography and Environment at UNC Chapel Hill. My research examines how land-surface characteristics, atmospheric conditions, and urban form interact to shape hyper-local heat stress patterns. I use citizen science observations, geospatial data, and machine learning to model Wet Bulb Globe Temperature and related environmental variables at fine spatial scales.
+            I am a climatologist with expertise in urban heat, environmental modeling, and high-resolution geospatial analysis. My research has focused on quantifying how land-surface characteristics and atmospheric conditions interact to shape hyper-local heat stress patterns.
           </p>
           <p>
-            My current work sits at the intersection of urban climatology, environmental modeling, and applied geographic analysis. Across my dissertation and related projects, I have focused on quantifying how urban form can amplify or reduce heat stress, and developing methods that can support climate risk communication and local adaptation planning.
+            I develop modeling frameworks that integrate observational data, remote sensing, and machine learning to map environmental conditions at fine spatial scales. This work has supported improved understanding of urban heat exposure and the role of built and vegetated environments in shaping risk.
           </p>
           <p>
-            In addition to research, I am interested in reproducible scientific workflows and the use of observational and modeling approaches to answer practical environmental questions.
+            My broader focus is on building transferable data science and geospatial tools that connect environmental data to real-world applications, including planning, infrastructure, and decision support.
           </p>
         </div>
 
         <div class="contact-card">
           <h3>At a Glance</h3>
           <ul>
-            <li>PhD Candidate, Geography and Environment</li>
-            <li>University of North Carolina at Chapel Hill, Southeast Regional Climate Center</li>
-            <li>Research emphasis: heat stress and environmental modeling</li>
-            <li>Dissertation defense date: March 30</li>
+            <li>PhD, Geography and Environment</li>
+            <li>UNC Chapel Hill</li>
+            <li>Climate + geospatial data science</li>
+            <li>Environmental modeling + applied analytics</li>
           </ul>
-          <div class="button-row">
-            <a class="btn btn-secondary" href="mailto:arobi120@unc.edu">Email</a>
-            <a class="btn btn-secondary" href="#cv">Open CV</a>
-          </div>
         </div>
       </div>
     </section>
 
+    <!-- PUBLICATIONS (UNCHANGED) -->
     <section id="publications">
       <div class="section-header">
         <h2>Publications</h2>
-        <p>Selected peer-reviewed publications, professional articles, and thesis work.</p>
+      </div>
+      <!-- KEEP YOUR ORIGINAL PUBLICATIONS BLOCK -->
+    </section>
+
+    <!-- WBGT TOOL (UNCHANGED) -->
+    <section id="wbgt-tool">
+      <div class="section-header">
+        <h2>WBGT Prediction Tool</h2>
+      </div>
+      <!-- KEEP ORIGINAL TOOL CONTENT -->
+    </section>
+
+    <!-- CV -->
+    <section id="cv">
+      <div class="section-header">
+        <h2>Curriculum Vitae</h2>
       </div>
 
-      <div class="publication-list">
-        <article class="publication">
-          <h3><a href="https://journals.ametsoc.org/view/journals/bams/105/11/BAMS-D-24-0230.1.xml" target="_blank" rel="noopener noreferrer">From data to action: how urban heat mapping campaigns can expose vulnerabilities and inform local heat policy</a></h3>
-          <div class="meta">Bulletin of the American Meteorological Society</div>
-          <p>
-            This article connects urban heat mapping campaigns to policy applications, with emphasis on how observational heat data can reveal vulnerability patterns and support local decision-making.
-          </p>
-        </article>
+      <div class="button-row" style="margin-bottom:16px;">
+        <a class="btn btn-primary"
+           href="https://drive.google.com/file/d/NEW_FILE_ID/view?usp=sharing"
+           target="_blank">Open CV</a>
 
-        <article class="publication">
-          <h3><a href="https://link.springer.com/article/10.1007/s00484-024-02821-3" target="_blank" rel="noopener noreferrer">An evaluation of intra-university campus temperature variability under variable synoptic weather conditions using mobile transects</a></h3>
-          <div class="meta">International Journal of Biometeorology</div>
-          <p>
-            This paper evaluates fine-scale temperature variability across a university campus using mobile transects and examines how local thermal contrasts change under different synoptic weather conditions.
-          </p>
-        </article>
+        <a class="btn btn-secondary"
+           href="https://drive.google.com/uc?export=download&id=NEW_FILE_ID"
+           target="_blank">Download CV</a>
+      </div>
 
-        <article class="publication">
-          <h3><a href="https://link.springer.com/article/10.1007/s00484-026-03126-3" target="_blank" rel="noopener noreferrer">A performance comparison of mobile transect methods for heat and humidity prediction in complex urban environments</a></h3>
-          <div class="meta">International Journal of Biometeorology</div>
-          <p>
-            This study compares walking, cycling, and driving transect methods for estimating heat and humidity patterns in heterogeneous urban settings and evaluates their strengths for high-resolution environmental modeling.
-          </p>
-        </article>
-
-        <article class="publication">
-          <h3><a href="https://www.proquest.com/openview/ed40a43ec702b7ff4ab2a5211844f911/1?pq-origsite=gscholar&cbl=18750&diss=y" target="_blank" rel="noopener noreferrer">Using Downscaled Climate Model Output to Examine Climate Change in North Carolina</a></h3>
-          <div class="meta">Master's Thesis</div>
-          <p>
-            My master's thesis examined downscaled climate model output to assess climate change patterns and implications in North Carolina.
-          </p>
-        </article>
+      <div class="cv-frame">
+        <div class="cv-frame-header">CV Preview</div>
+        <iframe src="https://drive.google.com/file/d/NEW_FILE_ID/preview"></iframe>
       </div>
     </section>
 
+    <!-- CYCLING (MOVED TO BOTTOM) -->
     <section id="cycling">
       <div class="section-header">
         <h2>Cycling</h2>
-        <p>Racing, training, and a few photos from the bike.</p>
       </div>
 
       <div class="cycling-intro">
-        I am a category 1 cyclist competing for Carolina Speed Lab and UNC Cycling. Alongside my academic work, training and racing is a big part of my life.
+        I am a category 1 cyclist competing for Carolina Speed Lab and UNC Cycling.
       </div>
 
       <div class="cycling-grid">
         <figure class="cycling-card">
-          <img src="https://drive.google.com/thumbnail?id=1CEMG_tc3cdpTM17kD-iDDgVeRIMaO50w&sz=w1600" alt="Cycling photo 1" />
-          <figcaption class="caption">Rock Hill Velodrome Eddy Merckx hour record. This was the third furthest ride by an American.</figcaption>
+          <img src="https://drive.google.com/thumbnail?id=1CEMG_tc3cdpTM17kD-iDDgVeRIMaO50w&sz=w1600">
+          <figcaption class="caption">Rock Hill Velodrome hour record effort.</figcaption>
         </figure>
 
         <figure class="cycling-card">
-          <img src="https://drive.google.com/thumbnail?id=15QbK88aP6x_TGN9EQN3AHueWxHF-hanV&sz=w1600" alt="Cycling photo 2" />
-          <figcaption class="caption">Sunny 2025 spring break training.</figcaption>
+          <img src="https://drive.google.com/thumbnail?id=15QbK88aP6x_TGN9EQN3AHueWxHF-hanV&sz=w1600">
+          <figcaption class="caption">Spring training.</figcaption>
         </figure>
 
         <figure class="cycling-card">
-          <img src="https://drive.google.com/thumbnail?id=15EMThQTrLFf8iPtARmHr7MtbaOcIpBOZ&sz=w1600" alt="Cycling photo 3" />
-          <figcaption class="caption">Sticking the breakaway.</figcaption>
+          <img src="https://drive.google.com/thumbnail?id=15EMThQTrLFf8iPtARmHr7MtbaOcIpBOZ&sz=w1600">
+          <figcaption class="caption">Breakaway effort.</figcaption>
         </figure>
 
         <figure class="cycling-card">
-          <img src="https://drive.google.com/thumbnail?id=1p63bVdWyZX74t1dOt23pgr4-hQO4D0io&sz=w1600" alt="Cycling photo 4" />
-          <figcaption class="caption">2025 NC/SC state road race champions.</figcaption>
+          <img src="https://drive.google.com/thumbnail?id=1p63bVdWyZX74t1dOt23pgr4-hQO4D0io&sz=w1600">
+          <figcaption class="caption">State championship.</figcaption>
         </figure>
 
         <figure class="cycling-card">
-          <img src="https://drive.google.com/thumbnail?id=1LdXxy8h7Ziafm09dSGmy3uXV7kzWxju8&sz=w1600" alt="Cycling photo 5" />
+          <img src="https://drive.google.com/thumbnail?id=1LdXxy8h7Ziafm09dSGmy3uXV7kzWxju8&sz=w1600">
           <figcaption class="caption">Top step.</figcaption>
         </figure>
       </div>
     </section>
 
-    <section id="wbgt-tool">
-      <div class="section-header">
-        <h2>BETA WBGT Prediction Tool</h2>
-        <p>
-          An interactive tool for estimating neighborhood-scale Wet Bulb Globe Temperature across Carrboro and Chapel Hill from broad-scale ambient conditions.
-        </p>
-      </div>
-
-      <div class="tool-card">
-        <span class="tool-kicker">Interactive Research Application</span>
-
-        <div class="tool-grid">
-          <div>
-            <h3>Downscaled WBGT prediction for Carrboro and Chapel Hill</h3>
-            <p>
-              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions (i.e., such as the broader-scale reading you might see on your phone). It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
-            </p>
-            <p>
-              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application uses machine learning to provided a high resolution estimate of how heat stress may differ between neighborhoods.
-            </p>
-            <p>
-              The model performs best when input conditions resemble one or a combination of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the citizen science observations were made.
-            </p>
-              The tool runs on a free server, so it takes a few minutes. Please be patient and you will recieve a downscaled prediction of WBGT in Carrboro and Chapel Hill. Please report any outages to arobi120@unc.edu.
-            </p>
-            <p>
-            <div class="tool-note">
-              Best use case: estimate likely afternoon WBGT patterns across Carrboro and Chapel Hill under conditions similar to those observed during the 2025 SERCC summer campaign.
-            </div>
-
-            <div class="button-row">
-              <a class="btn btn-primary" href="https://heat-stress-flask.onrender.com/" target="_blank" rel="noopener noreferrer">Open the WBGT Tool</a>
-            </div>
-          </div>
-
-          <div class="tool-panel">
-            <h4>What the tool does</h4>
-            <ul>
-              <li>Predicts WBGT at 100 m spatial resolution</li>
-              <li>Focuses on Carrboro and Chapel Hill</li>
-              <li>Uses broad ambient conditions as inputs</li>
-              <li>Downscales conditions to neighborhood-scale heat stress patterns</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tool-feature-grid">
-          <div class="feature-card">
-            <h4>Training data</h4>
-            <p>
-              Built usuing machine learning, observations collected during the 2025 heat season citizen science campaign conducted by SERCC, and underlying land surface characteristics.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h4>When it is most accurate</h4>
-            <p>
-              The application is most reliable when weather inputs are similar to the 21 observation days included in the training data.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h4>Best prediction time</h4>
-            <p>
-              The tool is best used for afternoon conditions, with peak usefulness around 2:15 PM.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="cv">
-      <div class="section-header">
-        <h2>Curriculum Vitae</h2>
-        <p>View the CV directly on this page, open it in Google Drive, or download it.</p>
-      </div>
-
-      <div class="button-row" style="margin-bottom: 16px;">
-        <a class="btn btn-primary" href="https://drive.google.com/file/d/19NGA0NCDFdycwREjpx_G2RiPHQk5uBDV/view?usp=sharing" target="_blank" rel="noopener noreferrer">Open CV in Google Drive</a>
-        <a class="btn btn-secondary" href="https://drive.google.com/uc?export=download&id=19NGA0NCDFdycwREjpx_G2RiPHQk5uBDV" target="_blank" rel="noopener noreferrer">Download CV</a>
-      </div>
-
-      <div class="cv-frame">
-        <div class="cv-frame-header">CV Preview</div>
-        <iframe src="https://drive.google.com/file/d/19NGA0NCDFdycwREjpx_G2RiPHQk5uBDV/preview" allow="autoplay"></iframe>
-      </div>
-    </section>
   </main>
 
   <footer>
-    © Andrew Robinson | Academic website and CV showcase
+    © Andrew Robinson, PhD
   </footer>
 </body>
-
 </html>
-
-
-
