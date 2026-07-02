@@ -623,9 +623,9 @@
 
     <section id="wbgt-tool">
       <div class="section-header">
-        <h2>WBGT Forecast Tool</h2>
+        <h2>WBGT Prediction Tool</h2>
         <p>
-          A live tool that maps neighborhood-scale Wet Bulb Globe Temperature across Carrboro and Chapel Hill for the next few days, driven automatically by the National Blend of Models (NBM) forecast.
+          An interactive tool for estimating neighborhood-scale Wet Bulb Globe Temperature across Carrboro and Chapel Hill from broad-scale ambient conditions.
         </p>
       </div>
 
@@ -634,19 +634,19 @@
 
         <div class="tool-grid">
           <div>
-            <h3>Live afternoon WBGT forecast for Carrboro and Chapel Hill</h3>
+            <h3>Downscaled WBGT prediction for Carrboro and Chapel Hill</h3>
             <p>
-              This web tool maps Wet Bulb Globe Temperature (WBGT) at roughly 100 m resolution across Carrboro and Chapel Hill for the next several days. It runs automatically from the National Blend of Models (NBM) weather forecast &mdash; no inputs required &mdash; and is built on observations from the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
+              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions such as the broader-scale reading you might see on your phone. It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
             </p>
             <p>
-              The tool translates the broad-scale forecast into neighborhood-scale heat stress maps, showing how WBGT can vary from block to block within the urban environment rather than as a single station value. For each upcoming day it renders the 2&ndash;3 PM window, the climatological peak of afternoon heat stress.
+              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application provides a downscaled estimate of how heat stress may differ from one part of town to another.
             </p>
             <p>
-              It is designed for the early-afternoon peak around 2:15 PM, and is most reliable when the forecast resembles the summer heat-season conditions used to train the underlying model.
+              The model performs best when input conditions resemble one of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the observational framework and model design are most closely aligned with the underlying data.
             </p>
 
             <div class="tool-note">
-              Best use: see how afternoon WBGT is likely to vary across Carrboro and Chapel Hill over the coming days, especially around the 2:15 PM heat peak.
+              Best use case: estimate likely afternoon WBGT patterns across Carrboro and Chapel Hill under conditions similar to those observed during the 2025 SERCC summer campaign.
             </div>
 
             <div class="button-row">
@@ -657,10 +657,10 @@
           <div class="tool-panel">
             <h4>What the tool does</h4>
             <ul>
-              <li>Maps WBGT at roughly 100 m resolution</li>
-              <li>Covers Carrboro and Chapel Hill</li>
-              <li>Runs automatically from the NBM forecast &mdash; no inputs</li>
-              <li>Forecasts the next few days at the 2&ndash;3 PM heat peak</li>
+              <li>Predicts WBGT at 100 m spatial resolution</li>
+              <li>Focuses on Carrboro and Chapel Hill</li>
+              <li>Uses broad ambient conditions as inputs</li>
+              <li>Downscales conditions to neighborhood-scale heat stress patterns</li>
             </ul>
           </div>
         </div>
@@ -676,7 +676,7 @@
           <div class="feature-card">
             <h4>When it is most accurate</h4>
             <p>
-              Most reliable when the forecast resembles the summer heat-season conditions the model was trained on.
+              The application is most reliable when weather inputs are similar to the 21 observation days included in the training data.
             </p>
           </div>
 
@@ -697,13 +697,13 @@
       </div>
 
       <div class="button-row" style="margin-bottom: 16px;">
-        <a class="btn btn-primary" href="https://drive.google.com/file/d/12eUyNGwD3eqVvMBzMp-zmGXjZcVp2uTK/view?usp=sharing" target="_blank" rel="noopener noreferrer">Open CV in Google Drive</a>
-        <a class="btn btn-secondary" href="https://drive.google.com/uc?export=download&id=12eUyNGwD3eqVvMBzMp-zmGXjZcVp2uTK" target="_blank" rel="noopener noreferrer">Download CV</a>
+        <a class="btn btn-primary" href="https://drive.google.com/file/d/1huac79aV-QMi_oisId9Ix8KyMkwvCRTf/view?usp=sharing" target="_blank" rel="noopener noreferrer">Open CV in Google Drive</a>
+        <a class="btn btn-secondary" href="https://drive.google.com/uc?export=download&id=1huac79aV-QMi_oisId9Ix8KyMkwvCRTf" target="_blank" rel="noopener noreferrer">Download CV</a>
       </div>
 
       <div class="cv-frame">
         <div class="cv-frame-header">CV Preview</div>
-        <iframe src="https://drive.google.com/file/d/12eUyNGwD3eqVvMBzMp-zmGXjZcVp2uTK/preview" allow="autoplay"></iframe>
+        <iframe src="https://drive.google.com/file/d/1huac79aV-QMi_oisId9Ix8KyMkwvCRTf/preview" allow="autoplay"></iframe>
       </div>
     </section>
   </main>
