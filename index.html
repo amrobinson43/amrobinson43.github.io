@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Andrew Robinson, PhD | Research, Publications, CV &amp; WBGT Tool</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #1d4ed8;
+      --accent-dark: #1e3a8a;
+      --accent-soft: #eff6ff;
+      --border: #dbe3ee;
+      --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+      --max: 1140px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(219, 227, 238, 0.9);
+    }
+
+    .nav {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--text);
+      letter-spacing: 0.2px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-links a.nav-cta {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 34px 20px 60px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    .panel,
+    .publication,
+    .cv-frame,
+    .bio-card,
+    .contact-card,
+    .tool-card,
+    .tool-panel,
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 34px;
+    }
+
+    .hero-header {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 12px;
+    }
+
+    .headshot {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e2e8f0;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      flex-shrink: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.08;
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: #334155;
+      margin-bottom: 22px;
+      max-width: 64ch;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 800;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .btn-secondary {
+      background: white;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-secondary:hover { background: #eff6ff; }
+
+    .hero-side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    section {
+      scroll-margin-top: 88px;
+      margin-top: 20px;
+      margin-bottom: 28px;
+    }
+
+    .section-header {
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      margin: 0 0 6px;
+      font-size: 1.8rem;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 75ch;
+    }
+
+    .bio-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+    }
+
+    .bio-card,
+    .contact-card {
+      padding: 28px;
+    }
+
+    .bio-card p,
+    .contact-card p,
+    .contact-card li {
+      color: #334155;
+    }
+
+    .contact-card ul {
+      margin: 14px 0 0;
+      padding-left: 20px;
+    }
+
+    .publication-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .publication {
+      padding: 22px;
+    }
+
+    .publication h3 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .publication .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .publication p {
+      margin: 0;
+      color: #334155;
+    }
+
+    .tool-card {
+      padding: 30px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .tool-kicker {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .tool-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+    }
+
+    .tool-card p {
+      margin-top: 0;
+      color: #334155;
+    }
+
+    .tool-note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: var(--accent-soft);
+      border: 1px solid #cfe0ff;
+      border-radius: 14px;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    .tool-panel {
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    .tool-panel h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .tool-panel p,
+    .tool-panel li {
+      color: #475569;
+      margin-top: 0;
+    }
+
+    .tool-panel ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .tool-feature-grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature-card {
+      padding: 20px;
+      background: #fcfdff;
+    }
+
+    .feature-card h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: #475569;
+      font-size: 0.96rem;
+    }
+
+    .cv-frame {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .cv-frame-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 800;
+      background: #fafcff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 85vh;
+      border: 0;
+      display: block;
+      background: white;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 10px 0 20px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .bio-grid,
+      .tool-grid,
+      .tool-feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .headshot {
+        width: 100px;
+        height: 100px;
+      }
+
+      iframe {
+        height: 70vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="#top">Andrew Robinson, PhD</a>
+      <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#bio">About</a>
+        <a href="#publications">Publications</a>
+        <a href="#wbgt-tool">WBGT Tool</a>
+        <a href="#cv">CV</a>
+        <a class="nav-cta" href="cycling.html">Cycling &amp; Bike-Fit Tool &rarr;</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container" id="top">
+    <section class="hero" id="home">
+      <div class="hero-card">
+        <p class="eyebrow">Urban Heat Stress Researcher · Climatologist · Cyclist</p>
+
+        <div class="hero-header">
+          <img
+            class="headshot"
+            src="https://drive.google.com/thumbnail?id=1KP-FsbKNoVEqF7jEpebp5uODLljynFLc&sz=w600"
+            alt="Andrew Robinson, PhD headshot"
+          />
+          <h1>Andrew Robinson, PhD</h1>
+        </div>
+
+        <p class="lead">
+          I study how heat stress varies from block to block within a city, and why those differences matter for public health. Using citizen science observations, geospatial data, and machine learning, I model Wet Bulb Globe Temperature (WBGT) at fine spatial scales to show how urban form, land cover, and atmospheric conditions combine to produce dangerous heat exposure at the neighborhood level. I earned my PhD in Geography and Environment from UNC Chapel Hill, working with NOAA's Southeast Regional Climate Center, and defended my dissertation on 30 March 2026. This site keeps that academic record together with a few of the things I do away from the desk.
+        </p>
+
+        <div class="button-row">
+          <a class="btn btn-primary" href="#cv">View CV</a>
+          <a class="btn btn-secondary" href="#publications">See Publications</a>
+          <a class="btn btn-secondary" href="#wbgt-tool">WBGT Prediction Tool</a>
+          <a class="btn btn-secondary" href="cycling.html">Cycling &amp; Bike-Fit Tool</a>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="panel">
+          <h3>Research Areas</h3>
+          <p>Neighborhood-scale heat stress modeling, Wet Bulb Globe Temperature (WBGT), urban microclimate variability, citizen science observation campaigns, geospatial analysis, and machine learning for environmental prediction.</p>
+        </div>
+        <div class="panel">
+          <h3>Affiliation</h3>
+          <p>Department of Geography and Environment, University of North Carolina at Chapel Hill and NOAA's Southeast Regional Climate Center.</p>
+        </div>
+        <div class="panel">
+          <h3>Current Focus</h3>
+          <p>Since defending, I have put most of my working time into my consulting practice, <a href="https://robinsonweatherandclimate.netlify.app/" target="_blank" rel="noopener noreferrer">Robinson Weather and Climate</a>, where I apply this research to practical weather and climate problems. This site stays focused on the academic work behind it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="bio">
+      <div class="section-header">
+        <h2>About</h2>
+        <p>Background, research focus, and what drives my work in urban heat stress science.</p>
+      </div>
+
+      <div class="bio-grid">
+        <div class="bio-card">
+          <p>
+            I am an urban climate researcher with a PhD from the Department of Geography and Environment at UNC Chapel Hill. My work answers a practical question: within a single city, which neighborhoods face the most dangerous heat stress, and why? I combine citizen science observations, geospatial data, and machine learning to model Wet Bulb Globe Temperature (WBGT) at 100-meter resolution. WBGT folds heat, humidity, wind, and solar radiation into one number, so it describes what the body actually feels far better than air temperature alone.
+          </p>
+          <p>
+            Across my dissertation and related projects, I have shown how urban form (building density, tree canopy, impervious surface) amplifies or reduces heat exposure at scales that matter for public health decisions. My methods translate broad atmospheric conditions into neighborhood-level heat stress maps, giving planners and emergency managers a clearer picture of where people are most at risk during extreme heat events.
+          </p>
+          <p>
+            I care about reproducible workflows and about turning research into tools people can actually use. Two of them live on this site: the <a href="#wbgt-tool">WBGT Prediction Tool</a> and the <a href="cycling.html#bikefit">bike-fit cockpit matcher</a> on my cycling page. That same applied bent is what I now spend most of my time on through my consulting practice, <a href="https://robinsonweatherandclimate.netlify.app/" target="_blank" rel="noopener noreferrer">Robinson Weather and Climate</a>.
+          </p>
+        </div>
+
+        <div class="contact-card">
+          <h3>At a Glance</h3>
+          <ul>
+            <li>PhD, Geography and Environment, UNC Chapel Hill</li>
+            <li>Affiliated with NOAA's Southeast Regional Climate Center</li>
+            <li>Research: fine-scale heat stress modeling using WBGT, citizen science, and machine learning</li>
+            <li>Dissertation defended 30 March 2026</li>
+          </ul>
+          <div class="button-row">
+            <a class="btn btn-secondary" href="mailto:arobi120@unc.edu">Email</a>
+            <a class="btn btn-secondary" href="#cv">Open CV</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="publications">
+      <div class="section-header">
+        <h2>Publications</h2>
+        <p>Selected peer-reviewed publications, professional articles, and thesis work.</p>
+      </div>
+
+      <div class="publication-list">
+        <article class="publication">
+          <h3><a href="https://journals.ametsoc.org/view/journals/bams/105/11/BAMS-D-24-0230.1.xml" target="_blank" rel="noopener noreferrer">From data to action: how urban heat mapping campaigns can expose vulnerabilities and inform local heat policy</a></h3>
+          <div class="meta">Bulletin of the American Meteorological Society</div>
+          <p>
+            This article connects urban heat mapping campaigns to policy applications, with emphasis on how observational heat data can reveal vulnerability patterns and support local decision-making.
+          </p>
+        </article>
+
+        <article class="publication">
+          <h3><a href="https://link.springer.com/article/10.1007/s00484-024-02821-3" target="_blank" rel="noopener noreferrer">An evaluation of intra-university campus temperature variability under variable synoptic weather conditions using mobile transects</a></h3>
+          <div class="meta">International Journal of Biometeorology</div>
+          <p>
+            This paper evaluates fine-scale temperature variability across a university campus using mobile transects and examines how local thermal contrasts change under different synoptic weather conditions.
+          </p>
+        </article>
+
+        <article class="publication">
+          <h3><a href="https://link.springer.com/article/10.1007/s00484-026-03126-3" target="_blank" rel="noopener noreferrer">A performance comparison of mobile transect methods for heat and humidity prediction in complex urban environments</a></h3>
+          <div class="meta">International Journal of Biometeorology</div>
+          <p>
+            This study compares walking, cycling, and driving transect methods for estimating heat and humidity patterns in heterogeneous urban settings and evaluates their strengths for high-resolution environmental modeling.
+          </p>
+        </article>
+
+        <article class="publication">
+          <h3><a href="https://drive.google.com/file/d/11UXRUm99gQdZYHpEOWH49-8vXs1Yb83M/view?usp=sharing" target="_blank" rel="noopener noreferrer">Quantifying the Microscale Details of Wet Bulb Globe Temperature Across Urban Heat Islands</a></h3>
+          <div class="meta">Doctoral Dissertation, UNC Chapel Hill, 2026</div>
+          <p>
+            My dissertation investigates how heat stress varies at the neighborhood scale within urban heat islands, using citizen science observations, geospatial data, and machine learning to model Wet Bulb Globe Temperature at 100-meter resolution across Carrboro and Chapel Hill.
+          </p>
+        </article>
+
+        <article class="publication">
+          <h3><a href="https://www.proquest.com/openview/ed40a43ec702b7ff4ab2a5211844f911/1?pq-origsite=gscholar&cbl=18750&diss=y" target="_blank" rel="noopener noreferrer">Using Downscaled Climate Model Output to Examine Climate Change in North Carolina</a></h3>
+          <div class="meta">Master's Thesis</div>
+          <p>
+            My master's thesis examined downscaled climate model output to assess climate change patterns and implications in North Carolina.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="wbgt-tool">
+      <div class="section-header">
+        <h2>WBGT Prediction Tool</h2>
+        <p>
+          An interactive tool for estimating neighborhood-scale Wet Bulb Globe Temperature across Carrboro and Chapel Hill from broad-scale ambient conditions.
+        </p>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-kicker">Interactive Research Application</span>
+
+        <div class="tool-grid">
+          <div>
+            <h3>Downscaled WBGT prediction for Carrboro and Chapel Hill</h3>
+            <p>
+              This web tool predicts Wet Bulb Globe Temperature (WBGT) at 100 m spatial resolution across Carrboro and Chapel Hill using ambient weather conditions such as the broader-scale reading you might see on your phone. It was developed from observations collected during the 2025 heat season citizen science campaign operated by the Southeast Regional Climate Center (SERCC).
+            </p>
+            <p>
+              The goal of the tool is to translate broader atmospheric conditions into neighborhood-scale heat stress estimates, helping users better understand how WBGT can vary across space within the urban environment. Rather than representing a single station value, the application provides a downscaled estimate of how heat stress may differ from one part of town to another.
+            </p>
+            <p>
+              The model performs best when input conditions resemble one of the 21 observation days used to train the application. It is also best suited for afternoon prediction, especially around 2:15 PM, when the observational framework and model design are most closely aligned with the underlying data.
+            </p>
+
+            <div class="tool-note">
+              Best use case: estimate likely afternoon WBGT patterns across Carrboro and Chapel Hill under conditions similar to those observed during the 2025 SERCC summer campaign.
+            </div>
+
+            <div class="button-row">
+              <a class="btn btn-primary" href="https://heat-stress-flask-nbm.onrender.com/" target="_blank" rel="noopener noreferrer">Open the WBGT Tool</a>
+            </div>
+          </div>
+
+          <div class="tool-panel">
+            <h4>What the tool does</h4>
+            <ul>
+              <li>Predicts WBGT at 100 m spatial resolution</li>
+              <li>Focuses on Carrboro and Chapel Hill</li>
+              <li>Uses broad ambient conditions as inputs</li>
+              <li>Downscales conditions to neighborhood-scale heat stress patterns</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tool-feature-grid">
+          <div class="feature-card">
+            <h4>Training data</h4>
+            <p>
+              Built from observations collected during the 2025 heat season citizen science campaign conducted by SERCC.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h4>When it is most accurate</h4>
+            <p>
+              The application is most reliable when weather inputs are similar to the 21 observation days included in the training data.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h4>Best prediction time</h4>
+            <p>
+              The tool is best used for afternoon conditions, with peak usefulness around 2:15 PM.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cv">
+      <div class="section-header">
+        <h2>Curriculum Vitae</h2>
+        <p>My CV is embedded below as a live Google Doc, so it stays current as I edit it. You can also open it in a new tab or save a copy as a PDF.</p>
+      </div>
+
+      <div class="button-row" style="margin-bottom: 16px;">
+        <a class="btn btn-primary" href="https://docs.google.com/document/d/1uY7Kd4xQvscilbV0fV2B0rG8ItAQX78GJa2N2ovq7xA/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Open CV in Google Docs</a>
+        <a class="btn btn-secondary" href="https://docs.google.com/document/d/1uY7Kd4xQvscilbV0fV2B0rG8ItAQX78GJa2N2ovq7xA/export?format=pdf" target="_blank" rel="noopener noreferrer">Download as PDF</a>
+      </div>
+
+      <div class="cv-frame">
+        <div class="cv-frame-header">CV Preview</div>
+        <iframe src="https://docs.google.com/document/d/1uY7Kd4xQvscilbV0fV2B0rG8ItAQX78GJa2N2ovq7xA/preview" title="Andrew Robinson curriculum vitae"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © Andrew Robinson, PhD &middot; Academic work and personal projects &middot; <a href="cycling.html">Cycling &amp; Bike-Fit Tool</a> &middot; <a href="https://robinsonweatherandclimate.netlify.app/" target="_blank" rel="noopener noreferrer">Consulting Practice</a>
+  </footer>
+</body>
+</html>
