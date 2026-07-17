@@ -119,8 +119,8 @@ window.BIKE_DB = [
     }
   },
   {
-    make: "Ventum", model: "GS1", year: 2022,
-    source: "https://bikeinsights.com/bikes/60b3fc4158bffe0026d6fce9-ventum-racing-gs1?version=2022&build=frameset",
+    make: "Ventum", model: "GS1", year: 2025,
+    source: "https://bikeinsights.com/bikes/60b3fc4158bffe0026d6fce9-ventum-racing-gs1?version=2025&build=frameset (geometry unchanged from 2022)",
     sizes: {
       "XS": { reach: 369, stack: 506, hta: 69 },
       "S":  { reach: 375, stack: 522, hta: 69.5 },
@@ -213,6 +213,79 @@ window.BIKE_DB = [
       "55": { reach: 390, stack: 560, hta: 73 },
       "57": { reach: 397, stack: 578, hta: 73.2 },
       "60": { reach: 404, stack: 604, hta: 73.2 }
+    }
+  },
+  {
+    make: "Specialized", model: "Tarmac SL9", year: 2026,
+    source: "bikeinsights.com (SL9 shares the Tarmac SL8 frame geometry: reach/stack identical, angles carried over)",
+    sizes: {
+      "44": { reach: 366, stack: 501, hta: 70.5 },
+      "49": { reach: 375, stack: 514, hta: 71.8 },
+      "52": { reach: 380, stack: 527, hta: 72.5 },
+      "54": { reach: 384, stack: 544, hta: 73 },
+      "56": { reach: 395, stack: 565, hta: 73.5 },
+      "58": { reach: 402, stack: 591, hta: 73.5 },
+      "61": { reach: 408, stack: 612, hta: 74 }
+    }
+  },
+  {
+    make: "Cannondale", model: "SuperSix EVO", year: 2026,
+    source: "https://bikeinsights.com/bikes/5b48e33f73697a0014037051-cannondale-bikes-supersix-evo?version=2026&build=base",
+    sizes: {
+      "44": { reach: 373, stack: 495, hta: 70.9 },
+      "48": { reach: 376, stack: 508, hta: 71.2 },
+      "50": { reach: 379, stack: 520, hta: 71.2 },
+      "52": { reach: 383, stack: 532, hta: 71.2 },
+      "54": { reach: 387, stack: 545, hta: 71.2 },
+      "56": { reach: 393, stack: 565, hta: 73 },
+      "58": { reach: 398, stack: 585, hta: 73 },
+      "61": { reach: 406, stack: 615, hta: 73 }
+    }
+  },
+  {
+    make: "Factor", model: "Ostro VAM", year: 2021,
+    source: "https://bikeinsights.com/bikes/6046c9288b335100177c4c7f-factor-bikes-ostro-vam?version=2021&build=base",
+    sizes: {
+      "49": { reach: 370, stack: 503, hta: 71.7 },
+      "52": { reach: 376, stack: 523, hta: 72.5 },
+      "54": { reach: 384, stack: 542, hta: 72.5 },
+      "56": { reach: 392, stack: 565, hta: 73.3 },
+      "58": { reach: 401, stack: 587, hta: 73.3 }
+    }
+  },
+  {
+    make: "Factor", model: "One", year: 2026,
+    source: "https://bikeinsights.com/compare?geometries=693a978c85491b001b673fa6 (2026 Factor One; steering geometry held constant across sizes)",
+    sizes: {
+      "47": { reach: 390, stack: 503, hta: 72.5 },
+      "52": { reach: 396, stack: 523, hta: 73.3 },
+      "54": { reach: 404, stack: 542, hta: 73.3 },
+      "56": { reach: 412, stack: 565, hta: 73.3 },
+      "58": { reach: 421, stack: 587, hta: 73.3 }
+    }
+  },
+  {
+    make: "Tavelo", model: "Arow", year: 2025,
+    source: "https://bikeinsights.com/bikes/6669ccefb8e6d4001be251d3-tavelo-arow",
+    sizes: {
+      "XS":  { reach: 365, stack: 517, hta: 70.8 },
+      "S":   { reach: 372, stack: 526, hta: 71.4 },
+      "M":   { reach: 380, stack: 538, hta: 72 },
+      "L":   { reach: 388, stack: 554, hta: 72.8 },
+      "XL":  { reach: 396, stack: 576, hta: 73 },
+      "XXL": { reach: 407, stack: 604, hta: 73 }
+    }
+  },
+  {
+    make: "Tavelo", model: "Grow", year: 2026,
+    source: "https://bikeinsights.com/bikes/6973ab68acd000001aa810a8-tavelo-grow",
+    sizes: {
+      "XS":  { reach: 368, stack: 530, hta: 70.5 },
+      "S":   { reach: 375, stack: 540, hta: 71 },
+      "M":   { reach: 385, stack: 558, hta: 71 },
+      "L":   { reach: 395, stack: 579, hta: 71.3 },
+      "XL":  { reach: 406, stack: 603, hta: 71.3 },
+      "XXL": { reach: 414, stack: 627, hta: 71.6 }
     }
   }
 ];
