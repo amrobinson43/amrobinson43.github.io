@@ -316,6 +316,22 @@
     }
     .bf-group-label:first-of-type { margin-top: 4px; }
 
+    .bf-picker {
+      border: 1px solid #d7e3f5;
+      background: #f5f9ff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+    .bf-card.b .bf-picker { border-color: #ffe0cc; background: #fff8f3; }
+    .bf-picker .bf-group-label { margin-top: 0; }
+    .bf-picker .bf-field { border-bottom-color: #e1ecfb; }
+    .bf-card.b .bf-picker .bf-field { border-bottom-color: #ffe9dc; }
+    .bf-picker .bf-field:last-of-type { border-bottom: none; }
+    .bf-dbsel { max-width: 210px; }
+    .bf-dbsel:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    .bf-picker-note { margin: 8px 2px 0; color: var(--muted); font-size: 0.82rem; }
+
     .bf-field {
       display: flex;
       align-items: center;
@@ -579,6 +595,13 @@
           It then finds the <strong>stem length, spacer stack, and stem angle</strong> that bring a new
           bike's hoods to the same point as your current bike, so your position carries over unchanged.
         </p>
+        <p>
+          To save you typing, each bike has a <strong>quick-fill menu</strong>. Pick a make, model, year,
+          and size, and the frame stack, reach, and head tube angle drop in for you. The list starts with a
+          set of current race bikes and is easy to grow. If your bike is not in it, leave the menu on manual
+          entry and read the three frame numbers off the maker's geometry chart. Stem, spacers, and bar are
+          your own components, so you still set those yourself.
+        </p>
 
         <div class="workflow">
           <div class="feature-card">
@@ -592,8 +615,8 @@
           <div class="feature-card">
             <h4><span class="step-num">2</span>Match the front end</h4>
             <p>
-              Enter both bikes below. The tool reports each bike's hood XY from the BB and the gap
-              between them, then solves for the stem and spacers that close that gap.
+              Pick each bike from the menu or type its numbers. The tool reports each bike's hood XY from
+              the BB and the gap between them, then solves for the stem and spacers that close it.
             </p>
           </div>
           <div class="feature-card">
@@ -617,16 +640,37 @@
             <!-- BIKE A -->
             <div class="bf-card a">
               <h4><span class="swatch a"></span>Bike A: current bike (target)</h4>
-              <p class="sub">The fit you already like. This is the position we match to.</p>
+              <p class="sub">Preset to a size ML Ventum NS1. This is the position we match to, so change it to your own bike.</p>
+
+              <div class="bf-picker">
+                <div class="bf-group-label">Quick-fill from bike database</div>
+                <div class="bf-field">
+                  <label>Make</label>
+                  <select id="a_db_make" class="bf-dbsel"></select>
+                </div>
+                <div class="bf-field">
+                  <label>Model</label>
+                  <select id="a_db_model" class="bf-dbsel" disabled></select>
+                </div>
+                <div class="bf-field">
+                  <label>Year</label>
+                  <select id="a_db_year" class="bf-dbsel" disabled></select>
+                </div>
+                <div class="bf-field">
+                  <label>Size</label>
+                  <select id="a_db_size" class="bf-dbsel" disabled></select>
+                </div>
+                <p class="bf-picker-note">Picking a size fills in stack, reach, and head tube angle below. If your bike is not listed, leave this on manual entry and type the three frame numbers yourself.</p>
+              </div>
 
               <div class="bf-group-label">Frame</div>
               <div class="bf-field">
                 <label>Frame stack <small>top of head tube, up from BB</small></label>
-                <input id="a_stack" type="number" step="1" value="580" />
+                <input id="a_stack" type="number" step="1" value="565" />
               </div>
               <div class="bf-field">
                 <label>Frame reach <small>top of head tube, forward from BB</small></label>
-                <input id="a_reach" type="number" step="1" value="387" />
+                <input id="a_reach" type="number" step="1" value="397" />
               </div>
               <div class="bf-field">
                 <label>Head tube angle <small>degrees from horizontal</small></label>
@@ -636,7 +680,7 @@
               <div class="bf-group-label">Steerer &amp; stem</div>
               <div class="bf-field">
                 <label>Number of spacers</label>
-                <input id="a_nsp" type="number" step="1" value="3" />
+                <input id="a_nsp" type="number" step="1" value="8" />
               </div>
               <div class="bf-field">
                 <label>Spacer thickness each <small>mm</small></label>
@@ -644,7 +688,7 @@
               </div>
               <div class="bf-field">
                 <label>Stem length <small>mm</small></label>
-                <input id="a_stem" type="number" step="1" value="100" />
+                <input id="a_stem" type="number" step="1" value="110" />
               </div>
               <div class="bf-field">
                 <label>Stem angle <small>deg, relative to steerer (e.g. -6)</small></label>
@@ -660,7 +704,7 @@
                 <label>Shifter / lever preset <small>pick your group, or Custom</small></label>
                 <select id="a_shifter_preset">
                   <option value="custom">Custom / enter your own</option>
-                  <option value="60">SRAM e1 (60 mm)</option>
+                  <option value="60" selected>SRAM e1 (60 mm)</option>
                   <option value="50">SRAM D1 (50 mm)</option>
                   <option value="50">Shimano 12s Di2 (50 mm)</option>
                   <option value="55">Shimano Hydro/Mechanical (55 mm)</option>
@@ -668,7 +712,7 @@
               </div>
               <div class="bf-field">
                 <label>Shifter / lever reach <small>mm, extra forward to the hand</small></label>
-                <input id="a_shifter" type="number" step="1" value="50" />
+                <input id="a_shifter" type="number" step="1" value="60" />
               </div>
               <div class="bf-field">
                 <label>Handlebar rise <span class="badge-new">new</span><small>hood height above clamp</small></label>
@@ -679,26 +723,47 @@
             <!-- BIKE B -->
             <div class="bf-card b">
               <h4><span class="swatch b"></span>Bike B: new bike (to match)</h4>
-              <p class="sub">The bike you are setting up. The matcher adjusts this one.</p>
+              <p class="sub">Preset to a size M BMC Trackmachine 01. This is the bike you are setting up, so the matcher adjusts this one.</p>
+
+              <div class="bf-picker">
+                <div class="bf-group-label">Quick-fill from bike database</div>
+                <div class="bf-field">
+                  <label>Make</label>
+                  <select id="b_db_make" class="bf-dbsel"></select>
+                </div>
+                <div class="bf-field">
+                  <label>Model</label>
+                  <select id="b_db_model" class="bf-dbsel" disabled></select>
+                </div>
+                <div class="bf-field">
+                  <label>Year</label>
+                  <select id="b_db_year" class="bf-dbsel" disabled></select>
+                </div>
+                <div class="bf-field">
+                  <label>Size</label>
+                  <select id="b_db_size" class="bf-dbsel" disabled></select>
+                </div>
+                <p class="bf-picker-note">Picking a size fills in stack, reach, and head tube angle below. If your bike is not listed, leave this on manual entry and type the three frame numbers yourself.</p>
+              </div>
 
               <div class="bf-group-label">Frame</div>
               <div class="bf-field">
                 <label>Frame stack <small>top of head tube, up from BB</small></label>
-                <input id="b_stack" type="number" step="1" value="545" />
+                <input id="b_stack" type="number" step="1" value="506" />
               </div>
               <div class="bf-field">
                 <label>Frame reach <small>top of head tube, forward from BB</small></label>
-                <input id="b_reach" type="number" step="1" value="400" />
+                <input id="b_reach" type="number" step="1" value="408" />
               </div>
               <div class="bf-field">
                 <label>Head tube angle <small>degrees from horizontal</small></label>
-                <input id="b_hta" type="number" step="0.1" value="73" />
+                <input id="b_hta" type="number" step="0.1" value="72" />
               </div>
 
               <div class="bf-group-label">Steerer &amp; stem</div>
               <div class="bf-field">
                 <label>Number of spacers</label>
-                <input id="b_nsp" type="number" step="1" value="2" />
+                <input id="b_nsp" type="number" step="1" value="0" />
               </div>
               <div class="bf-field">
                 <label>Spacer thickness each <small>mm</small></label>
@@ -706,17 +771,17 @@
               </div>
               <div class="bf-field">
                 <label>Stem length <small>mm</small></label>
-                <input id="b_stem" type="number" step="1" value="100" />
+                <input id="b_stem" type="number" step="1" value="140" />
               </div>
               <div class="bf-field">
                 <label>Stem angle <small>deg, relative to steerer (e.g. -6)</small></label>
-                <input id="b_ang" type="number" step="1" value="-6" />
+                <input id="b_ang" type="number" step="1" value="17" />
               </div>
 
               <div class="bf-group-label">Bar &amp; levers</div>
               <div class="bf-field">
                 <label>Bar reach <small>clamp to hood, forward</small></label>
-                <input id="b_barreach" type="number" step="1" value="80" />
+                <input id="b_barreach" type="number" step="1" value="107.4" />
               </div>
               <div class="bf-field">
                 <label>Shifter / lever preset <small>pick your group, or Custom</small></label>
@@ -730,11 +795,11 @@
               </div>
               <div class="bf-field">
                 <label>Shifter / lever reach <small>mm, extra forward to the hand</small></label>
-                <input id="b_shifter" type="number" step="1" value="50" />
+                <input id="b_shifter" type="number" step="1" value="0" />
               </div>
               <div class="bf-field">
                 <label>Handlebar rise <span class="badge-new">new</span><small>hood height above clamp</small></label>
-                <input id="b_barstack" type="number" step="1" value="20" />
+                <input id="b_barstack" type="number" step="1" value="0" />
               </div>
             </div>
           </div>
@@ -821,6 +886,7 @@
     © Andrew Robinson, PhD | Cycling &amp; bike-fit tool &middot; <a href="index.html">Research, Publications &amp; CV</a>
   </footer>
 
+  <script src="bikes.js"></script>
   <script>
     // ---------- Model (2D side view; x forward, y up, origin at BB) ----------
     // Ported from the Python "Bike Cockpit Matcher", with an added handlebar-rise term.
@@ -1189,6 +1255,97 @@
       updateAll();
     }
 
+    // ---------- Bike geometry database (quick-fill) ----------
+    const BIKE_DB = Array.isArray(window.BIKE_DB) ? window.BIKE_DB : [];
+
+    function dbMakes() { return [...new Set(BIKE_DB.map(b => b.make))].sort(); }
+    function dbModels(make) { return [...new Set(BIKE_DB.filter(b => b.make === make).map(b => b.model))].sort(); }
+    function dbYears(make, model) {
+      return [...new Set(BIKE_DB.filter(b => b.make === make && b.model === model).map(b => b.year))].sort((a, b) => b - a);
+    }
+    function dbEntry(make, model, year) {
+      return BIKE_DB.find(b => b.make === make && b.model === model && String(b.year) === String(year));
+    }
+    function dbSizes(make, model, year) {
+      const e = dbEntry(make, model, year);
+      return e ? Object.keys(e.sizes) : [];
+    }
+
+    function fillSelect(sel, items, placeholder) {
+      sel.innerHTML = '';
+      const first = document.createElement('option');
+      first.value = ''; first.textContent = placeholder;
+      sel.appendChild(first);
+      items.forEach(function (it) {
+        const o = document.createElement('option');
+        o.value = it; o.textContent = it;
+        sel.appendChild(o);
+      });
+    }
+
+    // Fill the frame fields for bike p from the current make/model/year/size selection.
+    function applyDbBike(p) {
+      const make = document.getElementById(p + '_db_make').value;
+      const model = document.getElementById(p + '_db_model').value;
+      const year = document.getElementById(p + '_db_year').value;
+      const size = document.getElementById(p + '_db_size').value;
+      if (!(make && model && year && size)) return;
+      const e = dbEntry(make, model, year);
+      if (!e || !e.sizes[size]) return;
+      const g = e.sizes[size];
+      document.getElementById(p + '_reach').value = g.reach;
+      document.getElementById(p + '_stack').value = g.stack;
+      document.getElementById(p + '_hta').value = g.hta;
+      updateAll();
+    }
+
+    // Wire the cascading Make -> Model -> Year -> Size menus for bike p.
+    function setupPicker(p) {
+      const makeSel = document.getElementById(p + '_db_make');
+      const modelSel = document.getElementById(p + '_db_model');
+      const yearSel = document.getElementById(p + '_db_year');
+      const sizeSel = document.getElementById(p + '_db_size');
+
+      fillSelect(makeSel, dbMakes(), 'Manual entry / select make');
+      fillSelect(modelSel, [], 'Select model'); modelSel.disabled = true;
+      fillSelect(yearSel, [], 'Select year'); yearSel.disabled = true;
+      fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
+
+      makeSel.addEventListener('change', function () {
+        const make = makeSel.value;
+        fillSelect(modelSel, make ? dbModels(make) : [], 'Select model');
+        modelSel.disabled = !make;
+        fillSelect(yearSel, [], 'Select year'); yearSel.disabled = true;
+        fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
+      });
+      modelSel.addEventListener('change', function () {
+        const make = makeSel.value, model = modelSel.value;
+        fillSelect(yearSel, model ? dbYears(make, model).map(String) : [], 'Select year');
+        yearSel.disabled = !model;
+        fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
+      });
+      yearSel.addEventListener('change', function () {
+        const make = makeSel.value, model = modelSel.value, year = yearSel.value;
+        fillSelect(sizeSel, year ? dbSizes(make, model, year) : [], 'Select size');
+        sizeSel.disabled = !year;
+      });
+      sizeSel.addEventListener('change', function () { applyDbBike(p); });
+    }
+
+    // Preselect a bike in the menus and fill its frame fields (used for the Bike A default).
+    function preselectBike(p, make, model, year, size) {
+      if (!BIKE_DB.length) return;
+      const makeSel = document.getElementById(p + '_db_make');
+      const modelSel = document.getElementById(p + '_db_model');
+      const yearSel = document.getElementById(p + '_db_year');
+      const sizeSel = document.getElementById(p + '_db_size');
+      makeSel.value = make; makeSel.dispatchEvent(new Event('change'));
+      modelSel.value = model; modelSel.dispatchEvent(new Event('change'));
+      yearSel.value = String(year); yearSel.dispatchEvent(new Event('change'));
+      sizeSel.value = size;
+      applyDbBike(p);
+    }
+
     // ---------- Wire up ----------
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.bf-inputs input').forEach(function (el) {
@@ -1204,6 +1361,12 @@
         });
         inp.addEventListener('input', function () { sel.value = 'custom'; });
       });
+      // Bike-database quick-fill menus. Bike A starts on the size ML Ventum NS1 (2026),
+      // Bike B on the size M BMC Trackmachine 01 (2020).
+      setupPicker('a');
+      setupPicker('b');
+      preselectBike('a', 'Ventum', 'NS1', 2026, 'ML');
+      preselectBike('b', 'BMC', 'Trackmachine 01', 2020, 'M');
       document.getElementById('bf-run').addEventListener('click', runMatch);
       updateAll();
     });
