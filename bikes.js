@@ -287,5 +287,17 @@ window.BIKE_DB = [
       "XL":  { reach: 406, stack: 603, hta: 71.3 },
       "XXL": { reach: 414, stack: 627, hta: 71.6 }
     }
+  },
+  {
+    make: "Trek", model: "Checkpoint ALR Gen 3", year: 2026,
+    source: "https://bikeinsights.com/bikes/5afb51844cb7640014ce4612-trek-bikes-checkpoint?version=2026&build=alr-gen-3",
+    sizes: {
+      "XS": { reach: 380, stack: 545, hta: 71.2 },
+      "S":  { reach: 385, stack: 566, hta: 71.6 },
+      "M":  { reach: 391, stack: 589, hta: 71.8 },
+      "ML": { reach: 397, stack: 608, hta: 72.5 },
+      "L":  { reach: 402, stack: 630, hta: 72.3 },
+      "XL": { reach: 408, stack: 650, hta: 72.6 }
+    }
   }
 ];
