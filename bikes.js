@@ -3,6 +3,9 @@
  *
  * Each entry is one bike (make, model, year) with per-size frame geometry:
  *   reach (mm), stack (mm), hta (head tube angle, degrees from horizontal).
+ *   Optional, used by the whole-bike view: sta (seat tube angle deg),
+ *   cs (chainstay mm), wb (wheelbase mm), drop (bottom bracket drop mm).
+ *   A size without cs/wb/drop is drawn with just its stack and reach.
  *
  * Rules:
  *   - Only bikes that have reach + stack + head tube angle are listed. Anything
@@ -25,48 +28,48 @@ window.BIKE_DB = [
     make: "Van Rysel", model: "RCR Pro", year: 2024,
     source: "https://bikeinsights.com/bikes/644a1a94d73bb7001afbbd69-van-rysel-rcr?version=2024&build=pro",
     sizes: {
-      "XXS": { reach: 378, stack: 509, hta: 71 },
-      "XS":  { reach: 383, stack: 515, hta: 73 },
-      "S":   { reach: 386, stack: 531, hta: 73 },
-      "M":   { reach: 388, stack: 546, hta: 73 },
-      "L":   { reach: 396, stack: 572, hta: 73 },
-      "XL":  { reach: 408, stack: 596, hta: 73 }
+      "XXS": { reach: 378, stack: 509, hta: 71, sta: 75.5, cs: 410, wb: 980, drop: 73 },
+      "XS":  { reach: 383, stack: 515, hta: 73, sta: 74, cs: 410, wb: 978, drop: 70 },
+      "S":   { reach: 386, stack: 531, hta: 73, sta: 74, cs: 410, wb: 979, drop: 67 },
+      "M":   { reach: 388, stack: 546, hta: 73, sta: 73.5, cs: 410, wb: 986, drop: 67 },
+      "L":   { reach: 396, stack: 572, hta: 73, sta: 73.5, cs: 410, wb: 1002, drop: 67 },
+      "XL":  { reach: 408, stack: 596, hta: 73, sta: 73.5, cs: 410, wb: 1022, drop: 67 }
     }
   },
   {
     make: "Specialized", model: "Tarmac SL8", year: 2024,
     source: "https://bikeinsights.com/bikes/64d218305cc094001b34f10c-specialized-bicycles-tarmac-sl8?version=2024&build=expert",
     sizes: {
-      "44": { reach: 366, stack: 501, hta: 70.5 },
-      "49": { reach: 375, stack: 514, hta: 71.8 },
-      "52": { reach: 380, stack: 527, hta: 72.5 },
-      "54": { reach: 384, stack: 544, hta: 73 },
-      "56": { reach: 395, stack: 565, hta: 73.5 },
-      "58": { reach: 402, stack: 591, hta: 73.5 },
-      "61": { reach: 408, stack: 612, hta: 74 }
+      "44": { reach: 366, stack: 501, hta: 70.5, sta: 75.5, cs: 410, wb: 970, drop: 74 },
+      "49": { reach: 375, stack: 514, hta: 71.8, sta: 75.5, cs: 410, wb: 973, drop: 74 },
+      "52": { reach: 380, stack: 527, hta: 72.5, sta: 74, cs: 410, wb: 975, drop: 74 },
+      "54": { reach: 384, stack: 544, hta: 73, sta: 74, cs: 410, wb: 978, drop: 72 },
+      "56": { reach: 395, stack: 565, hta: 73.5, sta: 73.5, cs: 410, wb: 991, drop: 72 },
+      "58": { reach: 402, stack: 591, hta: 73.5, sta: 73.5, cs: 410, wb: 1006, drop: 72 },
+      "61": { reach: 408, stack: 612, hta: 74, sta: 73, cs: 410, wb: 1013, drop: 72 }
     }
   },
   {
     make: "Trek", model: "Madone SLR Gen 8", year: 2024,
     source: "https://bikeinsights.com/bikes/5afb497d4cb7640014ce45e3-trek-bikes-madone?version=2024&build=slr-gen-8",
     sizes: {
-      "XS": { reach: 370, stack: 507, hta: 71.6 },
-      "S":  { reach: 378, stack: 530, hta: 72.2 },
-      "M":  { reach: 384, stack: 546, hta: 72.9 },
-      "ML": { reach: 389, stack: 562, hta: 73.5 },
-      "L":  { reach: 394, stack: 582, hta: 73.8 },
-      "XL": { reach: 402, stack: 610, hta: 73.9 }
+      "XS": { reach: 370, stack: 507, hta: 71.6, sta: 73.8, cs: 410, wb: 971, drop: 72 },
+      "S":  { reach: 378, stack: 530, hta: 72.2, sta: 73.8, cs: 410, wb: 976, drop: 72 },
+      "M":  { reach: 384, stack: 546, hta: 72.9, sta: 73.6, cs: 410, wb: 981, drop: 70 },
+      "ML": { reach: 389, stack: 562, hta: 73.5, sta: 73.4, cs: 410, wb: 980, drop: 70 },
+      "L":  { reach: 394, stack: 582, hta: 73.8, sta: 73.4, cs: 411, wb: 990, drop: 68 },
+      "XL": { reach: 402, stack: 610, hta: 73.9, sta: 73.4, cs: 412, wb: 1007, drop: 68 }
     }
   },
   {
     make: "Giant", model: "TCR Advanced SL", year: 2024,
     source: "https://bikeinsights.com/bikes/5ec58ac612391b00171718bd-giant-bicycles-tcr-advanced?version=2024&build=base",
     sizes: {
-      "S":  { reach: 383, stack: 528, hta: 72.3 },
-      "M":  { reach: 388, stack: 545, hta: 73.5 },
-      "ML": { reach: 393, stack: 562, hta: 73 },
-      "L":  { reach: 402, stack: 581, hta: 73 },
-      "XL": { reach: 412, stack: 596, hta: 72.5 }
+      "S":  { reach: 383, stack: 528, hta: 72.3, sta: 74, cs: 405, wb: 977, drop: 69.5 },
+      "M":  { reach: 388, stack: 545, hta: 73.5, sta: 73.5, cs: 405, wb: 980, drop: 69.5 },
+      "ML": { reach: 393, stack: 562, hta: 73, sta: 73, cs: 405, wb: 991, drop: 67 },
+      "L":  { reach: 402, stack: 581, hta: 73, sta: 73, cs: 405, wb: 1006, drop: 67 },
+      "XL": { reach: 412, stack: 596, hta: 72.5, sta: 72.5, cs: 405, wb: 1020, drop: 67 }
     }
   },
   {
@@ -86,12 +89,12 @@ window.BIKE_DB = [
     make: "Cervélo", model: "R5", year: 2024,
     source: "https://bikeinsights.com/bikes/626f6fdb439858002590d99f-cervelo-cycles-r5?build=base&version=2024",
     sizes: {
-      "48": { reach: 363, stack: 497, hta: 71 },
-      "51": { reach: 371, stack: 522, hta: 72 },
-      "54": { reach: 380, stack: 547, hta: 73 },
-      "56": { reach: 389, stack: 572, hta: 73 },
-      "58": { reach: 398, stack: 597, hta: 73 },
-      "61": { reach: 407, stack: 622, hta: 73 }
+      "48": { reach: 363, stack: 497, hta: 71, sta: 73, cs: 410, wb: 972, drop: 74.5 },
+      "51": { reach: 371, stack: 522, hta: 72, sta: 73, cs: 410, wb: 974, drop: 74.5 },
+      "54": { reach: 380, stack: 547, hta: 73, sta: 73, cs: 410, wb: 977, drop: 72 },
+      "56": { reach: 389, stack: 572, hta: 73, sta: 73, cs: 410, wb: 994, drop: 72 },
+      "58": { reach: 398, stack: 597, hta: 73, sta: 73, cs: 410, wb: 1011, drop: 69.5 },
+      "61": { reach: 407, stack: 622, hta: 73, sta: 73, cs: 410, wb: 1028, drop: 69.5 }
     }
   },
   {
@@ -110,12 +113,12 @@ window.BIKE_DB = [
     make: "Ventum", model: "NS1", year: 2026,
     source: "https://bikeinsights.com/bikes/5e5ff9a292ca070017ea4dfb-ventum-racing-ns1?version=2026&build=base",
     sizes: {
-      "XS": { reach: 370, stack: 493, hta: 71 },
-      "S":  { reach: 378, stack: 515, hta: 72 },
-      "M":  { reach: 388, stack: 541, hta: 73 },
-      "ML": { reach: 397, stack: 565, hta: 73 },
-      "L":  { reach: 405, stack: 590, hta: 73 },
-      "XL": { reach: 413, stack: 615, hta: 73 }
+      "XS": { reach: 370, stack: 493, hta: 71, sta: 73.5, cs: 410, wb: 968, drop: 69 },
+      "S":  { reach: 378, stack: 515, hta: 72, sta: 73.5, cs: 410, wb: 974, drop: 69 },
+      "M":  { reach: 388, stack: 541, hta: 73, sta: 73, cs: 410, wb: 984, drop: 69 },
+      "ML": { reach: 397, stack: 565, hta: 73, sta: 73, cs: 410, wb: 1000, drop: 69 },
+      "L":  { reach: 405, stack: 590, hta: 73, sta: 73, cs: 410, wb: 1015, drop: 69 },
+      "XL": { reach: 413, stack: 615, hta: 73, sta: 73, cs: 410, wb: 1031, drop: 69 }
     }
   },
   {
@@ -171,9 +174,9 @@ window.BIKE_DB = [
     make: "BMC", model: "Trackmachine 01", year: 2020,
     source: "https://bikeinsights.com/bikes/5d1fb658c9e24d0017f62b7b-bmc-switzerland-trackmachine-01?version=2019&build=frameset",
     sizes: {
-      "S": { reach: 390, stack: 471, hta: 72 },
-      "M": { reach: 408, stack: 506, hta: 72 },
-      "L": { reach: 430, stack: 544, hta: 72 }
+      "S": { reach: 390, stack: 471, hta: 72, sta: 74, cs: 390, wb: 963, drop: 50 },
+      "M": { reach: 408, stack: 506, hta: 72, sta: 74, cs: 390, wb: 981, drop: 58 },
+      "L": { reach: 430, stack: 544, hta: 72, sta: 74, cs: 390, wb: 1003, drop: 58 }
     }
   },
   {
@@ -219,13 +222,13 @@ window.BIKE_DB = [
     make: "Specialized", model: "Tarmac SL9", year: 2026,
     source: "bikeinsights.com (SL9 shares the Tarmac SL8 frame geometry: reach/stack identical, angles carried over)",
     sizes: {
-      "44": { reach: 366, stack: 501, hta: 70.5 },
-      "49": { reach: 375, stack: 514, hta: 71.8 },
-      "52": { reach: 380, stack: 527, hta: 72.5 },
-      "54": { reach: 384, stack: 544, hta: 73 },
-      "56": { reach: 395, stack: 565, hta: 73.5 },
-      "58": { reach: 402, stack: 591, hta: 73.5 },
-      "61": { reach: 408, stack: 612, hta: 74 }
+      "44": { reach: 366, stack: 501, hta: 70.5, sta: 75.5, cs: 410, wb: 970, drop: 74 },
+      "49": { reach: 375, stack: 514, hta: 71.8, sta: 75.5, cs: 410, wb: 973, drop: 74 },
+      "52": { reach: 380, stack: 527, hta: 72.5, sta: 74, cs: 410, wb: 975, drop: 74 },
+      "54": { reach: 384, stack: 544, hta: 73, sta: 74, cs: 410, wb: 978, drop: 72 },
+      "56": { reach: 395, stack: 565, hta: 73.5, sta: 73.5, cs: 410, wb: 991, drop: 72 },
+      "58": { reach: 402, stack: 591, hta: 73.5, sta: 73.5, cs: 410, wb: 1006, drop: 72 },
+      "61": { reach: 408, stack: 612, hta: 74, sta: 73, cs: 410, wb: 1013, drop: 72 }
     }
   },
   {
