@@ -299,5 +299,24 @@ window.BIKE_DB = [
       "L":  { reach: 402, stack: 630, hta: 72.3 },
       "XL": { reach: 408, stack: 650, hta: 72.6 }
     }
+  },
+  {
+    make: "BMC", model: "Trackmachine TR01", year: 2024,
+    source: "BMC official geometry/size chart (rider height: S <173cm, M 170-185cm, L >183cm). HTA not on that chart; 72 carried from Bike Insights.",
+    sizes: {
+      "S": { reach: 434, stack: 436, hta: 72 },
+      "M": { reach: 459, stack: 471, hta: 72 },
+      "L": { reach: 452, stack: 526, hta: 72 }
+    }
+  },
+  {
+    make: "Factor", model: "Raiden", year: 2025,
+    source: "https://bikeinsights.com/bikes/6762e4a975943b001b55ab3a-factor-bikes-raiden",
+    sizes: {
+      "XS": { reach: 390, stack: 475, hta: 73.3 },
+      "S":  { reach: 410, stack: 495, hta: 73.3 },
+      "M":  { reach: 435, stack: 515, hta: 73.3 },
+      "L":  { reach: 454, stack: 530, hta: 73.3 }
+    }
   }
 ];
