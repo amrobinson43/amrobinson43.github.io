@@ -1039,16 +1039,31 @@
       function model(bike, g, geo) {
         const m = { full: false, pts: [g.bb, g.ht, g.spacerTop, g.clamp, g.barTop, g.hood] };
         if (geo && geo.cs && geo.wb && geo.drop) {
-          const drop = geo.drop, cs = geo.cs, wb = geo.wb, sta = geo.sta || 73.5;
+          const drop = geo.drop, cs = geo.cs, wb = geo.wb;
+          const staR = (geo.sta || 73.5) * Math.PI / 180;
+          const htaR = bike.hta * Math.PI / 180;
           const rearX = -Math.sqrt(Math.max(cs * cs - drop * drop, 1));
           m.full = true;
           m.rear = { x: rearX, y: drop };
           m.front = { x: rearX + wb, y: drop };
-          m.seatTop = { x: -bike.stack / Math.tan(sta * Math.PI / 180), y: bike.stack };
+          // Seat tube top from actual seat tube length (else approximate at stack height)
+          if (geo.st) {
+            m.seatTop = { x: -geo.st * Math.cos(staR), y: geo.st * Math.sin(staR) };
+            m.seatPostTop = { x: m.seatTop.x - 120 * Math.cos(staR), y: m.seatTop.y + 120 * Math.sin(staR) };
+          } else {
+            m.seatTop = { x: -bike.stack / Math.tan(staR), y: bike.stack };
+            m.seatPostTop = null;
+          }
+          // Head tube bottom from head tube length down the steerer axis (else = head tube top)
+          m.htBottom = geo.ht
+            ? { x: bike.reach + geo.ht * Math.cos(htaR), y: bike.stack - geo.ht * Math.sin(htaR) }
+            : { x: bike.reach, y: bike.stack };
           m.pts = m.pts.concat([
             { x: rearX - RAD, y: drop }, { x: rearX + wb + RAD, y: drop },
-            { x: rearX, y: drop - RAD }, { x: rearX, y: drop + RAD }, m.seatTop
+            { x: rearX, y: drop - RAD }, { x: rearX, y: drop + RAD },
+            m.seatTop, m.htBottom
           ]);
+          if (m.seatPostTop) m.pts.push(m.seatPostTop);
         }
         return m;
       }
@@ -1085,16 +1100,18 @@
       function drawWhole(bike, g, m, color) {
         const [bx, by] = P(g.bb), [hx, hy] = P(g.ht), [sx, sy] = P(g.spacerTop),
               [cx, cy] = P(g.clamp), [tx, ty] = P(g.barTop), [ox, oy] = P(g.hood);
-        const [rx, ry] = P(m.rear), [fx, fy] = P(m.front), [stx, sty] = P(m.seatTop);
+        const [rx, ry] = P(m.rear), [fx, fy] = P(m.front), [stx, sty] = P(m.seatTop), [hbx, hby] = P(m.htBottom);
         let o = '';
         o += '<circle cx="' + rx + '" cy="' + ry + '" r="' + rPx + '" fill="none" stroke="' + color + '" stroke-width="2"/>';
         o += '<circle cx="' + fx + '" cy="' + fy + '" r="' + rPx + '" fill="none" stroke="' + color + '" stroke-width="2"/>';
         o += svgLine(bx, by, rx, ry, color, 2.6);    // chainstay
         o += svgLine(bx, by, stx, sty, color, 2.6);  // seat tube
-        o += svgLine(bx, by, hx, hy, color, 2.6);    // down tube
+        if (m.seatPostTop) { const sp = P(m.seatPostTop); o += svgLine(stx, sty, sp[0], sp[1], color, 2); } // seatpost stub
+        o += svgLine(bx, by, hbx, hby, color, 2.6);  // down tube -> head tube bottom
+        o += svgLine(hx, hy, hbx, hby, color, 3.4);  // head tube (angled)
         o += svgLine(stx, sty, hx, hy, color, 2.6);  // top tube
         o += svgLine(stx, sty, rx, ry, color, 2.6);  // seat stay
-        o += svgLine(hx, hy, fx, fy, color, 2.6);    // fork / front
+        o += svgLine(hbx, hby, fx, fy, color, 2.6);  // fork
         o += svgLine(hx, hy, sx, sy, color, 3);      // spacers
         o += svgLine(sx, sy, cx, cy, color, 3);      // stem
         o += svgLine(cx, cy, tx, ty, color, 3);      // handlebar rise
@@ -1309,7 +1326,7 @@
       document.getElementById(p + '_stack').value = g.stack;
       document.getElementById(p + '_hta').value = g.hta;
       // Store full frame geometry for the whole-bike view (null if this size lacks it)
-      bikeGeo[p] = (g.cs && g.wb && g.drop) ? { cs: g.cs, wb: g.wb, drop: g.drop, sta: g.sta } : null;
+      bikeGeo[p] = (g.cs && g.wb && g.drop) ? { cs: g.cs, wb: g.wb, drop: g.drop, sta: g.sta, st: g.st, ht: g.ht } : null;
       updateAll();
     }
 
