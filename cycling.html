@@ -471,7 +471,7 @@
       background: #ffffff;
       overflow: hidden;
     }
-    #bfSvg { width: 100%; height: auto; display: block; }
+    #bfSvg, #bfSvgZoom { width: 100%; height: auto; display: block; }
     .bf-caption { margin: 10px 2px 0; color: var(--muted); font-size: 0.88rem; }
 
     .assumptions {
@@ -525,9 +525,9 @@
       <p class="eyebrow">Category 1 Racer · UNC Cycling</p>
       <h1>Cycling</h1>
       <p class="lead">
-        Bike racing is a huge part of my life, and it sits right next to the
-        research on this site rather than apart from it. I am a category 1 cyclist and UNC Cycling Alumni. 
-        Below are a few photos from racing and training, along with an interactive bike-fit
+        Bike racing has been a big part of my life for a long time, and it sits right next to the
+        research on this site rather than apart from it. I am a category 1 cyclist racing with UNC
+        Cycling. Below are a few photos from racing and training, along with an interactive bike-fit
         tool I built to carry the exact same riding position from one bike to the next.
       </p>
       <div class="button-row">
@@ -540,11 +540,11 @@
     <section id="photos">
       <div class="section-header">
         <h2>Photos</h2>
-        <p>Some photos from my racing and training.</p>
+        <p>Racing, training, and a few moments from the bike.</p>
       </div>
 
       <div class="cycling-intro">
-        Training and racing have been a steady part of my life alongside my academic work.
+        I race on the road as a category 1 cyclist with UNC Cycling. Training and racing have been a steady part of my life alongside my academic work.
       </div>
 
       <div class="cycling-grid">
@@ -579,8 +579,8 @@
       <div class="section-header">
         <h2>Bike-Fit Cockpit Matcher</h2>
         <p>
-          Move your riding position from one bike to another by putting the contact
-          point of your hoods in the same place in space relative to the bottom bracket.
+          Move your riding position from one bike to another by putting the front end, meaning your
+          hoods, in the same place in space relative to the bottom bracket.
         </p>
       </div>
 
@@ -588,8 +588,8 @@
         <span class="tool-kicker">Interactive Tool</span>
         <h3>Match the front end of a new bike to your current fit</h3>
         <p>
-          Every point on a bike fit can be described by where it sits relative to the center of the
-          <strong>bottom bracket (BB)</strong>. This tool
+          Every point on a bike fit can be described by where it sits relative to the
+          <strong>bottom bracket (BB)</strong>, the fixed origin your body works around. This tool
           takes the geometry of two bikes and computes exactly where each one places your
           <strong>hood contact point</strong> (x is how far forward, y is how far up, both measured from the BB).
           It then finds the <strong>stem length, spacer stack, and stem angle</strong> that bring a new
@@ -680,7 +680,7 @@
               <div class="bf-group-label">Steerer &amp; stem</div>
               <div class="bf-field">
                 <label>Number of spacers</label>
-                <input id="a_nsp" type="number" step="1" value="7" />
+                <input id="a_nsp" type="number" step="1" value="8" />
               </div>
               <div class="bf-field">
                 <label>Spacer thickness each <small>mm</small></label>
@@ -691,8 +691,8 @@
                 <input id="a_stem" type="number" step="1" value="110" />
               </div>
               <div class="bf-field">
-                <label>Stem angle <small>deg, relative to steerer (e.g. -6)</small></label>
-                <input id="a_ang" type="number" step="1" value="-6" />
+                <label>Stem angle <small>deg, relative to steerer (e.g. -7)</small></label>
+                <input id="a_ang" type="number" step="1" value="-7" />
               </div>
 
               <div class="bf-group-label">Bar &amp; levers</div>
@@ -774,7 +774,7 @@
                 <input id="b_stem" type="number" step="1" value="140" />
               </div>
               <div class="bf-field">
-                <label>Stem angle <small>deg, relative to steerer (e.g. -6)</small></label>
+                <label>Stem angle <small>deg, relative to steerer (e.g. -7)</small></label>
                 <input id="b_ang" type="number" step="1" value="17" />
               </div>
 
@@ -851,19 +851,21 @@
               <svg id="bfSvgZoom" viewBox="0 0 860 380" role="img" aria-label="Zoomed, to-scale comparison of both bikes' cockpit geometry"></svg>
             </div>
             <p class="bf-caption">
-              Zoomed to the front end so small differences stand out. Both bikes are labelled here,
-              Bike&nbsp;A above its segments and Bike&nbsp;B below, and the dashed line marks the
-              hood-to-hood gap (Δ&nbsp;forward,&nbsp;Δ&nbsp;up).
+              Origin is the bottom bracket. x&nbsp;=&nbsp;forward, y&nbsp;=&nbsp;up. The front end only, so
+              small differences stand out. Bike&nbsp;A is labelled above its segments and Bike&nbsp;B below,
+              and the dashed line marks the hood-to-hood gap (Δ&nbsp;forward,&nbsp;Δ&nbsp;up).
             </p>
 
             <h4 style="margin: 22px 0 8px; font-size: 1.1rem;">Whole-bike geometry, matched at the bottom bracket</h4>
             <div class="bf-svg-wrap">
-              <svg id="bfSvg" viewBox="0 0 940 560" role="img" aria-label="To-scale comparison of both bikes' full geometry, matched at the bottom bracket"></svg>
+              <svg id="bfSvg" viewBox="0 0 940 560" role="img" aria-label="To-scale whole-bike comparison of both bikes overlaid at the bottom bracket"></svg>
             </div>
             <p class="bf-caption">
-              The full geometry of each bike drawn to scale from the same bottom bracket: wheels, frame,
-              fork, and cockpit. A bike selected from the menu shows its whole frame (wheelbase, chainstay,
-              angles); a bike entered by hand shows just its stack and reach. Faint grid squares are 100&nbsp;mm.
+              Both complete bikes drawn to scale and overlaid at the bottom bracket, so you can see how the
+              frames, wheels, and front ends line up. Faint grid squares are 100&nbsp;mm; wheels are drawn
+              at a 340&nbsp;mm radius. A bike drawn as a bare dashed stack-and-reach line is one whose full
+              frame geometry (chainstay, wheelbase, BB drop) is not in the database yet; pick a listed size
+              to see the complete bike.
             </p>
           </div>
 
@@ -874,7 +876,8 @@
               <li>Frame stack and reach are taken as the top of the head tube (as on standard geometry charts).</li>
               <li>Spacers stack along the steerer axis; stem angle is measured relative to the steerer (0&deg; = perpendicular to it), matching how stems are specced.</li>
               <li>The hood point is the bar reach plus shifter/lever reach forward of the bar clamp, raised by the handlebar rise.</li>
-              <li>Ignored for simplicity: bar drop, hood rotation, headset/top-cap stack, and clamp stack height. Use it to match bikes to each other, not as an absolute fit study.</li>
+              <li>The whole-bike drawing places the axles using chainstay, wheelbase, and BB drop; the head tube and fork use head tube length and angle; the seat tube and a short seatpost stub use seat tube length and angle. Where a value is missing the segment falls back to a reasonable approximation.</li>
+              <li>Ignored for simplicity: fork rake as a separate quantity (the fork is drawn straight to the front axle), bar drop, hood rotation, headset/top-cap stack, and clamp stack height. Use it to match bikes to each other, not as an absolute fit study.</li>
             </ul>
           </details>
         </div>
@@ -981,6 +984,11 @@
     }
     const R = v => Math.round(v);
 
+    // Whole-bike frame geometry per slot, set by applyDbBike when the selected
+    // database size carries chainstay + wheelbase + BB drop. null means the bike
+    // is drawn as a bare stack/reach skeleton instead of a full frame.
+    const bikeGeo = { a: null, b: null };
+
     // ---------- Live results + redraw ----------
     function updateAll() {
       const a = readBike('a'), b = readBike('b');
@@ -1026,55 +1034,67 @@
         '>' + str + '</text>';
     }
 
-    // Frame geometry {cs,wb,drop,sta} of the DB bike selected in each slot (null = manual entry).
-    const bikeGeo = { a: null, b: null };
-
-    // Whole-bike view: both bikes drawn to scale from the same bottom bracket. A bike with full
-    // frame data (chainstay/wheelbase/BB drop) is drawn as a complete bike; otherwise just stack/reach.
+    // Main (whole-bike) drawing. Draws both complete bikes overlaid at the BB into
+    // #bfSvg, then hands off to drawZoom for the cockpit close-up in #bfSvgZoom.
     function drawViz(a, b) {
-      const W = 940, H = 560;
+      const svg = document.getElementById('bfSvg');
+      const W = 940, H = 560, RAD = 340;   // wheel radius in mm (700c with tyre)
       const ga = hoodGeometry(a), gb = hoodGeometry(b);
-      const RAD = 340; // wheel + tire radius (mm), 700c, same for both bikes so they compare fairly
 
-      function model(bike, g, geo) {
-        const m = { full: false, pts: [g.bb, g.ht, g.spacerTop, g.clamp, g.barTop, g.hood] };
-        if (geo && geo.cs && geo.wb && geo.drop) {
-          const drop = geo.drop, cs = geo.cs, wb = geo.wb;
-          const staR = (geo.sta || 73.5) * Math.PI / 180;
-          const htaR = bike.hta * Math.PI / 180;
-          const rearX = -Math.sqrt(Math.max(cs * cs - drop * drop, 1));
-          m.full = true;
-          m.rear = { x: rearX, y: drop };
-          m.front = { x: rearX + wb, y: drop };
-          // Seat tube top from actual seat tube length (else approximate at stack height)
-          if (geo.st) {
-            m.seatTop = { x: -geo.st * Math.cos(staR), y: geo.st * Math.sin(staR) };
-            m.seatPostTop = { x: m.seatTop.x - 120 * Math.cos(staR), y: m.seatTop.y + 120 * Math.sin(staR) };
-          } else {
-            m.seatTop = { x: -bike.stack / Math.tan(staR), y: bike.stack };
-            m.seatPostTop = null;
-          }
-          // Head tube bottom from head tube length down the steerer axis (else = head tube top)
-          m.htBottom = geo.ht
-            ? { x: bike.reach + geo.ht * Math.cos(htaR), y: bike.stack - geo.ht * Math.sin(htaR) }
-            : { x: bike.reach, y: bike.stack };
-          m.pts = m.pts.concat([
-            { x: rearX - RAD, y: drop }, { x: rearX + wb + RAD, y: drop },
-            { x: rearX, y: drop - RAD }, { x: rearX, y: drop + RAD },
-            m.seatTop, m.htBottom
-          ]);
-          if (m.seatPostTop) m.pts.push(m.seatPostTop);
+      // Build a whole-bike point model for one bike. Full frame (wheels, fork,
+      // stays, seat tube) only when the size carried chainstay + wheelbase + drop;
+      // otherwise a stack/reach skeleton.
+      function model(bike, hood, geo) {
+        const htaR = bike.hta * Math.PI / 180;
+        const htTop = { x: bike.reach, y: bike.stack };
+        if (!(geo && geo.cs && geo.wb && geo.drop != null)) {
+          return { full: false, htTop: htTop };
         }
-        return m;
-      }
-      const ma = model(a, ga, bikeGeo.a), mb = model(b, gb, bikeGeo.b);
+        const drop = geo.drop;
+        const rearX = -Math.sqrt(Math.max(geo.cs * geo.cs - drop * drop, 0));
+        const rearAxle = { x: rearX, y: -drop };
+        const frontAxle = { x: rearX + geo.wb, y: -drop };
 
-      // Bounding box over both bikes plus the BB origin
-      const allPts = [{ x: 0, y: 0 }].concat(ma.pts, mb.pts);
-      let minX = Math.min(...allPts.map(p => p.x)) - 40;
-      let maxX = Math.max(...allPts.map(p => p.x)) + 120;
-      let minY = Math.min(...allPts.map(p => p.y)) - 30;
-      let maxY = Math.max(...allPts.map(p => p.y)) + 45;
+        // Head tube bottom: down the steerer axis from the head tube top by ht.
+        const htLen = geo.ht || 0;
+        const htBottom = { x: htTop.x + htLen * Math.cos(htaR), y: htTop.y - htLen * Math.sin(htaR) };
+
+        // Seat tube up from the BB along the seat tube angle; short seatpost stub above.
+        const staR = (geo.sta || 73.5) * Math.PI / 180;
+        const stLen = geo.st || 0;
+        let seatTop, postTop;
+        if (stLen > 0) {
+          seatTop = { x: -stLen * Math.cos(staR), y: stLen * Math.sin(staR) };
+          postTop = { x: seatTop.x - 120 * Math.cos(staR), y: seatTop.y + 120 * Math.sin(staR) };
+        } else {
+          // No seat tube length published: approximate a seat cluster near top-tube height.
+          const yy = htTop.y - 20;
+          seatTop = { x: -yy / Math.tan(staR), y: yy };
+          postTop = { x: seatTop.x - 90 * Math.cos(staR), y: seatTop.y + 90 * Math.sin(staR) };
+        }
+        return { full: true, htTop, htBottom, rearAxle, frontAxle, seatTop, postTop };
+      }
+
+      const ma = model(a, ga, bikeGeo.a);
+      const mb = model(b, gb, bikeGeo.b);
+
+      // ----- Bounding box over everything we will draw -----
+      const bbPts = [{ x: 0, y: 0 }];
+      [[ma, ga], [mb, gb]].forEach(function (pair) {
+        const m = pair[0], g = pair[1];
+        bbPts.push(m.htTop, g.spacerTop, g.clamp, g.barTop, g.hood);
+        if (m.full) {
+          bbPts.push(m.htBottom, m.seatTop, m.postTop);
+          bbPts.push({ x: m.rearAxle.x - RAD, y: m.rearAxle.y - RAD });
+          bbPts.push({ x: m.rearAxle.x + RAD, y: m.rearAxle.y + RAD });
+          bbPts.push({ x: m.frontAxle.x + RAD, y: m.frontAxle.y - RAD });
+        }
+      });
+      let minX = Math.min(...bbPts.map(p => p.x));
+      let maxX = Math.max(...bbPts.map(p => p.x));
+      let minY = Math.min(...bbPts.map(p => p.y));
+      let maxY = Math.max(...bbPts.map(p => p.y));
+      minX -= 60; maxX += 120; minY -= 50; maxY += 60;
 
       const bw = Math.max(maxX - minX, 10), bh = Math.max(maxY - minY, 10);
       let s = Math.min(W / bw, H / bh);
@@ -1082,102 +1102,83 @@
       const offX = (W - bw * s) / 2, offY = (H - bh * s) / 2;
       const SX = x => offX + (x - minX) * s;
       const SY = y => H - offY - (y - minY) * s;
-      const P = p => [SX(p.x), SY(p.y)];
-      const rPx = RAD * s;
 
+      // ----- Grid (100 mm) -----
       let out = '';
-
-      // Grid (100 mm)
       const g0x = Math.ceil(minX / 100) * 100, g0y = Math.ceil(minY / 100) * 100;
       for (let gx = g0x; gx <= maxX; gx += 100) out += svgLine(SX(gx), SY(minY), SX(gx), SY(maxY), COL.grid, 1);
       for (let gy = g0y; gy <= maxY; gy += 100) out += svgLine(SX(minX), SY(gy), SX(maxX), SY(gy), COL.grid, 1);
 
-      // Axes through the BB origin
-      out += svgLine(SX(minX), SY(0), SX(maxX), SY(0), COL.axis, 1.4);
-      out += svgLine(SX(0), SY(minY), SX(0), SY(maxY), COL.axis, 1.4);
+      // ----- Axes through the BB origin -----
+      out += svgLine(SX(minX), SY(0), SX(maxX), SY(0), COL.axis, 1.2, '2 5');
+      out += svgLine(SX(0), SY(minY), SX(0), SY(maxY), COL.axis, 1.2, '2 5');
 
-      // Whole bike: wheels, frame triangle, fork, cockpit
-      function drawWhole(bike, g, m, color) {
-        const [bx, by] = P(g.bb), [hx, hy] = P(g.ht), [sx, sy] = P(g.spacerTop),
-              [cx, cy] = P(g.clamp), [tx, ty] = P(g.barTop), [ox, oy] = P(g.hood);
-        const [rx, ry] = P(m.rear), [fx, fy] = P(m.front), [stx, sty] = P(m.seatTop), [hbx, hby] = P(m.htBottom);
+      // ----- One bike (frame + wheels + fork + cockpit) -----
+      function bikeSvg(m, g, color, soft) {
+        const P = p => [SX(p.x), SY(p.y)];
+        const op = soft ? 0.55 : 0.9;
         let o = '';
-        o += '<circle cx="' + rx + '" cy="' + ry + '" r="' + rPx + '" fill="none" stroke="' + color + '" stroke-width="2"/>';
-        o += '<circle cx="' + fx + '" cy="' + fy + '" r="' + rPx + '" fill="none" stroke="' + color + '" stroke-width="2"/>';
-        o += svgLine(bx, by, rx, ry, color, 2.6);    // chainstay
-        o += svgLine(bx, by, stx, sty, color, 2.6);  // seat tube
-        if (m.seatPostTop) { const sp = P(m.seatPostTop); o += svgLine(stx, sty, sp[0], sp[1], color, 2); } // seatpost stub
-        o += svgLine(bx, by, hbx, hby, color, 2.6);  // down tube -> head tube bottom
-        o += svgLine(hx, hy, hbx, hby, color, 3.4);  // head tube (angled)
-        o += svgLine(stx, sty, hx, hy, color, 2.6);  // top tube
-        o += svgLine(stx, sty, rx, ry, color, 2.6);  // seat stay
-        o += svgLine(hbx, hby, fx, fy, color, 2.6);  // fork
-        o += svgLine(hx, hy, sx, sy, color, 3);      // spacers
-        o += svgLine(sx, sy, cx, cy, color, 3);      // stem
-        o += svgLine(cx, cy, tx, ty, color, 3);      // handlebar rise
-        o += svgLine(tx, ty, ox, oy, color, 3);      // bar + lever
-        o += svgCircle(rx, ry, 3, color);
-        o += svgCircle(fx, fy, 3, color);
-        o += svgCircle(bx, by, 3, color);
-        o += svgCircle(ox, oy, 6, color, '#fff');
+        if (m.full) {
+          // Wheels
+          o += '<circle cx="' + SX(m.rearAxle.x) + '" cy="' + SY(m.rearAxle.y) + '" r="' + (RAD * s) +
+               '" fill="none" stroke="' + color + '" stroke-width="2.4" opacity="' + op + '"/>';
+          o += '<circle cx="' + SX(m.frontAxle.x) + '" cy="' + SY(m.frontAxle.y) + '" r="' + (RAD * s) +
+               '" fill="none" stroke="' + color + '" stroke-width="2.4" opacity="' + op + '"/>';
+          const [bx, by] = P({ x: 0, y: 0 });
+          const [htx, hty] = P(m.htTop), [hbx, hby] = P(m.htBottom);
+          const [stx, sty] = P(m.seatTop), [ptx, pty] = P(m.postTop);
+          const [rax, ray] = P(m.rearAxle), [fax, fay] = P(m.frontAxle);
+          o += svgLine(bx, by, hbx, hby, color, 3);     // down tube (BB -> head tube bottom)
+          o += svgLine(bx, by, stx, sty, color, 3);     // seat tube (BB -> seat top)
+          o += svgLine(stx, sty, htx, hty, color, 3);   // top tube (seat top -> head tube top)
+          o += svgLine(hbx, hby, htx, hty, color, 3.4); // head tube
+          o += svgLine(bx, by, rax, ray, color, 3);     // chain stay
+          o += svgLine(rax, ray, stx, sty, color, 3);   // seat stay
+          o += svgLine(stx, sty, ptx, pty, color, 3);   // seatpost stub
+          o += svgLine(hbx, hby, fax, fay, color, 3);   // fork
+          o += svgCircle(rax, ray, 3, color);           // axles
+          o += svgCircle(fax, fay, 3, color);
+        } else {
+          // Skeleton: just the stack/reach frame vector from the BB.
+          const [bx, by] = P({ x: 0, y: 0 });
+          const [htx, hty] = P(m.htTop);
+          o += svgLine(bx, by, htx, hty, color, 2.4, '6 5');
+        }
+        // Cockpit chain (head tube top -> spacers -> stem -> handlebar rise -> hood)
+        const [h0x, h0y] = P(g.ht), [spx, spy] = P(g.spacerTop), [clx, cly] = P(g.clamp),
+              [btx, bty] = P(g.barTop), [hdx, hdy] = P(g.hood);
+        o += svgLine(h0x, h0y, spx, spy, color, 3);
+        o += svgLine(spx, spy, clx, cly, color, 3);
+        o += svgLine(clx, cly, btx, bty, color, 3);
+        o += svgLine(btx, bty, hdx, hdy, color, 3);
+        o += svgCircle(hdx, hdy, 6, color, '#fff');       // hood contact point
         return o;
       }
-      // Fallback: stack/reach skeleton (manual entry or a bike with no frame data)
-      function drawSkeleton(g, color) {
-        const [bx, by] = P(g.bb), [hx, hy] = P(g.ht), [sx, sy] = P(g.spacerTop),
-              [cx, cy] = P(g.clamp), [tx, ty] = P(g.barTop), [ox, oy] = P(g.hood);
-        let o = '';
-        o += svgLine(bx, by, hx, hy, color, 1.6, '5 5');
-        o += svgLine(hx, hy, sx, sy, color, 3);
-        o += svgLine(sx, sy, cx, cy, color, 3);
-        o += svgLine(cx, cy, tx, ty, color, 3);
-        o += svgLine(tx, ty, ox, oy, color, 3);
-        o += svgCircle(hx, hy, 3.4, color);
-        o += svgCircle(sx, sy, 3.4, color);
-        o += svgCircle(cx, cy, 3.4, color);
-        o += svgCircle(ox, oy, 6, color, '#fff');
-        return o;
-      }
 
-      out += mb.full ? drawWhole(b, gb, mb, COL.b) : drawSkeleton(gb, COL.b);
-      out += ma.full ? drawWhole(a, ga, ma, COL.a) : drawSkeleton(ga, COL.a);
+      // Draw B first (softer), A on top.
+      out += bikeSvg(mb, gb, COL.b, true);
+      out += bikeSvg(ma, ga, COL.a, false);
 
-      // Reach / stack guides (Bike A)
-      out += svgLine(SX(0), SY(0), SX(a.reach), SY(0), COL.annot, 1.3, '3 4');
-      out += svgText((SX(0) + SX(a.reach)) / 2, SY(0) - 6, 'reach ' + R(a.reach), { anchor: 'middle', size: 11.5, weight: 700 });
-      out += svgLine(SX(a.reach), SY(0), SX(a.reach), SY(a.stack), COL.annot, 1.3, '3 4');
-      out += svgText(SX(a.reach) + 6, (SY(0) + SY(a.stack)) / 2, 'stack ' + R(a.stack), { anchor: 'start', size: 11.5, weight: 700 });
-
-      // Wheelbase + chainstay labels (Bike A, when whole bike)
-      if (ma.full) {
-        const [rx, ry] = P(ma.rear), fpt = P(ma.front), [bx, by] = P(ga.bb);
-        const fx = fpt[0];
-        out += svgLine(rx, ry, fx, ry, COL.a, 1.1, '2 4');
-        out += svgText((rx + fx) / 2, ry + 16, 'wheelbase ' + R(bikeGeo.a.wb), { anchor: 'middle', size: 11.5, fill: COL.a, weight: 700 });
-        out += svgText((bx + rx) / 2, (by + ry) / 2 - 5, 'CS ' + R(bikeGeo.a.cs), { anchor: 'middle', size: 11.5, fill: COL.a, weight: 700 });
-      }
-
-      // BB origin marker
+      // ----- BB origin marker -----
       out += svgCircle(SX(0), SY(0), 5, COL.bb);
       out += svgCircle(SX(0), SY(0), 9, 'none', COL.bb);
-      out += svgText(SX(0) - 10, SY(0) + 20, 'BB', { anchor: 'end', fill: COL.bb, weight: 700, size: 12 });
+      out += svgText(SX(0) - 11, SY(0) + 20, 'BB', { anchor: 'end', fill: COL.bb, weight: 700, size: 12 });
 
-      // Hood markers + delta
-      const [oax, oay] = P(ga.hood), [obx, oby] = P(gb.hood);
-      out += svgLine(oax, oay, obx, oby, COL.delta, 1.6, '4 4');
+      // ----- Hood markers + delta -----
+      const oax = SX(ga.hood.x), oay = SY(ga.hood.y), obx = SX(gb.hood.x), oby = SY(gb.hood.y);
+      out += svgLine(oax, oay, obx, oby, COL.delta, 1.8, '4 4');
       const dX = R(gb.hood.x - ga.hood.x), dY = R(gb.hood.y - ga.hood.y);
-      out += svgText((oax + obx) / 2 + 8, (oay + oby) / 2 - 6, 'Δ ' + dX + ', ' + dY + ' mm', { anchor: 'start', size: 12, fill: COL.delta, weight: 700 });
-      out += svgText(oax + 10, oay - 9, 'A hood', { anchor: 'start', size: 12, fill: COL.a, weight: 700 });
-      out += svgText(obx + 10, oby + 18, 'B hood', { anchor: 'start', size: 12, fill: COL.b, weight: 700 });
+      out += svgText((oax + obx) / 2 + 10, (oay + oby) / 2 - 6, 'Δ ' + dX + ', ' + dY + ' mm',
+        { anchor: 'start', size: 12.5, fill: COL.delta, weight: 700 });
 
-      // Scale bar (100 mm), bottom-right
-      const sbY = SY(minY) - 12, sbX = SX(maxX) - 100 * s - 14;
-      out += svgLine(sbX, sbY, sbX + 100 * s, sbY, COL.annotText, 2.5);
+      // ----- Scale bar (100 mm) -----
+      const px = 100 * s, sbX = SX(minX) + 16, sbY = SY(minY) - 12;
+      out += svgLine(sbX, sbY, sbX + px, sbY, COL.annotText, 2.5);
       out += svgLine(sbX, sbY - 4, sbX, sbY + 4, COL.annotText, 2.5);
-      out += svgLine(sbX + 100 * s, sbY - 4, sbX + 100 * s, sbY + 4, COL.annotText, 2.5);
-      out += svgText(sbX + 100 * s / 2, sbY - 7, '100 mm', { anchor: 'middle', size: 11, fill: COL.annotText, weight: 700 });
+      out += svgLine(sbX + px, sbY - 4, sbX + px, sbY + 4, COL.annotText, 2.5);
+      out += svgText(sbX + px / 2, sbY - 7, '100 mm', { anchor: 'middle', size: 11, fill: COL.annotText, weight: 700 });
 
-      document.getElementById('bfSvg').innerHTML = out;
+      svg.innerHTML = out;
       drawZoom(a, b);
     }
 
@@ -1312,22 +1313,37 @@
       });
     }
 
-    // Fill the frame fields for bike p from the current make/model/year/size selection.
+    // Fill the frame fields for bike p from the current make/model/year/size selection,
+    // and capture whole-bike geometry when the size carries it.
     function applyDbBike(p) {
       const make = document.getElementById(p + '_db_make').value;
       const model = document.getElementById(p + '_db_model').value;
       const year = document.getElementById(p + '_db_year').value;
       const size = document.getElementById(p + '_db_size').value;
-      if (!(make && model && year && size)) { bikeGeo[p] = null; updateAll(); return; }
+      if (!(make && model && year && size)) { bikeGeo[p] = null; return; }
       const e = dbEntry(make, model, year);
-      if (!e || !e.sizes[size]) { bikeGeo[p] = null; updateAll(); return; }
+      if (!e || !e.sizes[size]) { bikeGeo[p] = null; return; }
       const g = e.sizes[size];
       document.getElementById(p + '_reach').value = g.reach;
       document.getElementById(p + '_stack').value = g.stack;
       document.getElementById(p + '_hta').value = g.hta;
-      // Store full frame geometry for the whole-bike view (null if this size lacks it)
-      bikeGeo[p] = (g.cs && g.wb && g.drop) ? { cs: g.cs, wb: g.wb, drop: g.drop, sta: g.sta, st: g.st, ht: g.ht } : null;
+      bikeGeo[p] = (g.cs && g.wb && (g.drop != null))
+        ? { sta: g.sta, cs: g.cs, wb: g.wb, drop: g.drop, st: g.st, ht: g.ht }
+        : null;
       updateAll();
+    }
+
+    // Reset bike p's picker to manual entry and drop its whole-bike geometry.
+    function resetPicker(p) {
+      bikeGeo[p] = null;
+      const makeSel = document.getElementById(p + '_db_make');
+      const modelSel = document.getElementById(p + '_db_model');
+      const yearSel = document.getElementById(p + '_db_year');
+      const sizeSel = document.getElementById(p + '_db_size');
+      if (makeSel) makeSel.value = '';
+      fillSelect(modelSel, [], 'Select model'); modelSel.disabled = true;
+      fillSelect(yearSel, [], 'Select year'); yearSel.disabled = true;
+      fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
     }
 
     // Wire the cascading Make -> Model -> Year -> Size menus for bike p.
@@ -1343,33 +1359,30 @@
       fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
 
       makeSel.addEventListener('change', function () {
-        bikeGeo[p] = null;
         const make = makeSel.value;
+        bikeGeo[p] = null;
         fillSelect(modelSel, make ? dbModels(make) : [], 'Select model');
         modelSel.disabled = !make;
         fillSelect(yearSel, [], 'Select year'); yearSel.disabled = true;
         fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
-        updateAll();
       });
       modelSel.addEventListener('change', function () {
-        bikeGeo[p] = null;
         const make = makeSel.value, model = modelSel.value;
+        bikeGeo[p] = null;
         fillSelect(yearSel, model ? dbYears(make, model).map(String) : [], 'Select year');
         yearSel.disabled = !model;
         fillSelect(sizeSel, [], 'Select size'); sizeSel.disabled = true;
-        updateAll();
       });
       yearSel.addEventListener('change', function () {
-        bikeGeo[p] = null;
         const make = makeSel.value, model = modelSel.value, year = yearSel.value;
+        bikeGeo[p] = null;
         fillSelect(sizeSel, year ? dbSizes(make, model, year) : [], 'Select size');
         sizeSel.disabled = !year;
-        updateAll();
       });
       sizeSel.addEventListener('change', function () { applyDbBike(p); });
     }
 
-    // Preselect a bike in the menus and fill its frame fields (used for the Bike A default).
+    // Preselect a bike in the menus and fill its frame fields (used for the defaults).
     function preselectBike(p, make, model, year, size) {
       if (!BIKE_DB.length) return;
       const makeSel = document.getElementById(p + '_db_make');
@@ -1385,7 +1398,20 @@
 
     // ---------- Wire up ----------
     document.addEventListener('DOMContentLoaded', function () {
+      // A manual edit of a frame number drops the database link (and the full-bike
+      // geometry), so the whole-bike view falls back to a skeleton rather than
+      // drawing a frame that no longer matches the typed numbers.
+      ['a', 'b'].forEach(function (p) {
+        ['_reach', '_stack', '_hta'].forEach(function (f) {
+          document.getElementById(p + f).addEventListener('input', function () {
+            resetPicker(p);
+            updateAll();
+          });
+        });
+      });
+      // All other inputs just recompute and redraw.
       document.querySelectorAll('.bf-inputs input').forEach(function (el) {
+        if (/_(reach|stack|hta)$/.test(el.id)) return;
         el.addEventListener('input', updateAll);
       });
       // Shifter presets: choosing a group fills in the mm value; typing a value reverts to Custom.
@@ -1397,17 +1423,6 @@
           updateAll();
         });
         inp.addEventListener('input', function () { sel.value = 'custom'; });
-      });
-      // Typing a frame number by hand means this is no longer a stock bike: revert the picker to
-      // manual entry so the whole-bike view falls back to stack/reach only.
-      ['a', 'b'].forEach(function (p) {
-        ['_reach', '_stack', '_hta'].forEach(function (suf) {
-          document.getElementById(p + suf).addEventListener('input', function () {
-            const mk = document.getElementById(p + '_db_make');
-            if (mk.value !== '') { mk.value = ''; mk.dispatchEvent(new Event('change')); }
-            bikeGeo[p] = null;
-          });
-        });
       });
       // Bike-database quick-fill menus. Bike A starts on the size ML Ventum NS1 (2026),
       // Bike B on the size M BMC Trackmachine 01 (2020).
