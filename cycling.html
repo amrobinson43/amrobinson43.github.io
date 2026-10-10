@@ -1050,10 +1050,12 @@
         if (!(geo && geo.cs && geo.wb && geo.drop != null)) {
           return { full: false, htTop: htTop };
         }
+        // BB drop: the axles sit ABOVE the bottom bracket (BB height < axle height),
+        // so the wheel centres are at y = +drop, with the BB below their shared line.
         const drop = geo.drop;
         const rearX = -Math.sqrt(Math.max(geo.cs * geo.cs - drop * drop, 0));
-        const rearAxle = { x: rearX, y: -drop };
-        const frontAxle = { x: rearX + geo.wb, y: -drop };
+        const rearAxle = { x: rearX, y: drop };
+        const frontAxle = { x: rearX + geo.wb, y: drop };
 
         // Head tube bottom: down the steerer axis from the head tube top by ht.
         const htLen = geo.ht || 0;
