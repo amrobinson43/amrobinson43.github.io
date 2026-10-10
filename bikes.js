@@ -344,5 +344,56 @@ window.BIKE_DB = [
       "L":  { reach: 440, stack: 482, hta: 72.5, sta: 78, cs: 380, wb: 1000, drop: 55, st: 540, ht: 95 },
       "XL": { reach: 460, stack: 516, hta: 72.5, sta: 78, cs: 380, wb: 1030, drop: 55, st: 560, ht: 130 }
     }
+  },
+  {
+    make: "Enve", model: "Melee", year: 2022,
+    source: "https://bikeinsights.com/bikes/62d9aea601229a001d700827-enve-melee?version=2025&build=base (original/pre-V2 Melee frame)",
+    sizes: {
+      "47": { reach: 370, stack: 509, hta: 71.1, sta: 75.1, cs: 410, wb: 980, drop: 75, st: 417, ht: 105 },
+      "50": { reach: 376, stack: 525, hta: 71.5, sta: 74.5, cs: 410, wb: 983, drop: 75, st: 434, ht: 120 },
+      "52": { reach: 381, stack: 539, hta: 72.2, sta: 74, cs: 410, wb: 983, drop: 75, st: 452, ht: 130 },
+      "54": { reach: 386, stack: 552, hta: 72.4, sta: 73.8, cs: 410, wb: 991, drop: 73, st: 466, ht: 145 },
+      "56": { reach: 394, stack: 571, hta: 73.3, sta: 73.5, cs: 410, wb: 992, drop: 73, st: 490, ht: 160 },
+      "58": { reach: 400, stack: 589, hta: 73.3, sta: 73.2, cs: 412, wb: 1006, drop: 71, st: 508, ht: 180 },
+      "60": { reach: 408, stack: 609, hta: 73.7, sta: 72.7, cs: 412, wb: 1013, drop: 71, st: 531, ht: 200 }
+    }
+  },
+  {
+    make: "Enve", model: "Melee", year: 2026,
+    source: "https://bikeinsights.com/bikes/62d9aea601229a001d700827-enve-melee (Melee V2, second-generation frame)",
+    sizes: {
+      "47": { reach: 368, stack: 502, hta: 70.8, sta: 75, cs: 410, wb: 978, drop: 75, st: 421, ht: 98 },
+      "50": { reach: 375, stack: 517, hta: 71.5, sta: 74.5, cs: 410, wb: 980, drop: 75, st: 442, ht: 110 },
+      "52": { reach: 381, stack: 533, hta: 72.3, sta: 74, cs: 410, wb: 979, drop: 75, st: 465, ht: 122 },
+      "54": { reach: 387, stack: 547, hta: 72.5, sta: 73.8, cs: 410, wb: 989, drop: 73, st: 480, ht: 139 },
+      "56": { reach: 393, stack: 565, hta: 73.2, sta: 73.5, cs: 410, wb: 991, drop: 73, st: 503, ht: 153 },
+      "58": { reach: 400, stack: 585, hta: 73.2, sta: 73.2, cs: 412, wb: 1007, drop: 71, st: 522, ht: 177 },
+      "60": { reach: 408, stack: 610, hta: 73.8, sta: 72.8, cs: 412, wb: 1011, drop: 71, st: 554, ht: 200 }
+    }
+  },
+  {
+    make: "Enve", model: "Fray", year: 2026,
+    source: "https://bikeinsights.com/bikes/65f63abc83d084001b3cf883-enve-fray (all-road)",
+    sizes: {
+      "47": { reach: 365, stack: 522, hta: 70.9, sta: 75, cs: 415, wb: 985, drop: 78, st: 425, ht: 107 },
+      "50": { reach: 371, stack: 540, hta: 71.3, sta: 74.5, cs: 415, wb: 994, drop: 78, st: 443, ht: 125 },
+      "52": { reach: 377, stack: 556, hta: 72, sta: 74, cs: 415, wb: 994, drop: 78, st: 464, ht: 137 },
+      "54": { reach: 383, stack: 573, hta: 72, sta: 73.8, cs: 415, wb: 1006, drop: 76, st: 479, ht: 157 },
+      "56": { reach: 389, stack: 591, hta: 72.6, sta: 73.5, cs: 415, wb: 1008, drop: 76, st: 501, ht: 172 },
+      "58": { reach: 396, stack: 610, hta: 72.6, sta: 73.2, cs: 417, wb: 1024, drop: 74, st: 519, ht: 194 },
+      "60": { reach: 403, stack: 633, hta: 73.3, sta: 72.8, cs: 420, wb: 1029, drop: 74, st: 547, ht: 215 }
+    }
+  },
+  {
+    make: "Enve", model: "MOG", year: 2024,
+    source: "https://bikeinsights.com/bikes/63ec04b5ae5820001b0a2c9c-enve-mog (gravel)",
+    sizes: {
+      "49": { reach: 367, stack: 520, hta: 71, sta: 74.5, cs: 420, wb: 993, drop: 77, st: 439, ht: 92 },
+      "52": { reach: 378, stack: 543, hta: 71, sta: 74, cs: 420, wb: 1012, drop: 77, st: 459, ht: 117 },
+      "54": { reach: 389, stack: 565, hta: 71.3, sta: 73.8, cs: 420, wb: 1027, drop: 75, st: 480, ht: 140 },
+      "56": { reach: 397, stack: 587, hta: 71.3, sta: 73.5, cs: 420, wb: 1042, drop: 75, st: 500, ht: 163 },
+      "58": { reach: 405, stack: 605, hta: 71.5, sta: 73.2, cs: 420, wb: 1053, drop: 73, st: 518, ht: 183 },
+      "60": { reach: 415, stack: 630, hta: 71.5, sta: 72.8, cs: 420, wb: 1071, drop: 73, st: 540, ht: 209 }
+    }
   }
 ];
