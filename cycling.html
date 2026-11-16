@@ -515,6 +515,7 @@
       <div class="nav-links">
         <a href="index.html">&larr; Academic Site</a>
         <a href="#photos">Photos</a>
+        <a href="#track-sim">Track Simulator</a>
         <a class="nav-cta" href="#bikefit">Bike-Fit Tool</a>
       </div>
     </nav>
@@ -528,11 +529,13 @@
         Bike racing has been a big part of my life for a long time, and it sits right next to the
         research on this site rather than apart from it. I am a category 1 cyclist racing with UNC
         Cycling. Below are a few photos from racing and training, along with an interactive bike-fit
-        tool I built to carry the exact same riding position from one bike to the next.
+        tool I built to carry the exact same riding position from one bike to the next, and a
+        physics-based simulator for standing-start track events.
       </p>
       <div class="button-row">
         <a class="btn btn-primary" href="#bikefit">Open the Bike-Fit Tool</a>
         <a class="btn btn-secondary" href="#photos">See Photos</a>
+        <a class="btn btn-secondary" href="#track-sim">Track Simulator</a>
         <a class="btn btn-secondary" href="index.html">Back to Research &amp; CV</a>
       </div>
     </section>
@@ -883,10 +886,67 @@
         </div>
       </div>
     </section>
+
+    <section id="track-sim">
+      <div class="section-header">
+        <h2>Track Standing-Start Simulator</h2>
+        <p>
+          Predict 1 km, 4 km and Hour performances from a standing start, and see how to pace them,
+          with a physics model of the start, the bends and every source of drag.
+        </p>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-kicker">Interactive Tool</span>
+        <h3>From the gate to the line, one hundredth of a second at a time</h3>
+        <p>
+          The simulator solves the equations of motion every 0.01 s. Your start is limited by a
+          <strong>torque–cadence profile</strong>: maximum torque at zero rpm, peak power at the cadence you
+          choose. With your <strong>chainring, sprocket and tyre</strong> it shows exactly when and where in the
+          race you hit that peak. It accounts for <strong>standing versus seated CdA</strong>, rolling resistance,
+          drivetrain and bearing losses, wheel inertia, air density and the lean in the velodrome bends.
+        </p>
+
+        <div class="workflow">
+          <div class="feature-card">
+            <h4><span class="step-num">1</span>Describe your start</h4>
+            <p>
+              Peak power off the line, the cadence you hit it at, your gear, and how long you stay out of
+              the saddle. Then choose from several realistic power curves, or paste your own race file.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4><span class="step-num">2</span>Read the prediction</h4>
+            <p>
+              Finishing time or Hour distance, lap splits, power, speed and cadence traces, an energy
+              budget, and what each 0.005 m² of CdA or 10 W is worth.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4><span class="step-num">3</span>Find the best pacing</h4>
+            <p>
+              An optimiser finds the fastest way to spend your average power, or your CP and W′. It shows
+              how long to stay all-out and what to settle onto, plus a gear sweep.
+            </p>
+          </div>
+        </div>
+
+        <div class="tool-note">
+          <strong>Fully documented:</strong> every equation, the input it uses, and its published source
+          (Martin et al., Morton, Skiba et al., Fitton &amp; Symons and others) are listed on the
+          <a href="track-simulator-equations.html">equations &amp; references page</a>.
+        </div>
+
+        <div class="button-row">
+          <a class="btn btn-primary" href="track-simulator.html">Open the Track Simulator</a>
+          <a class="btn btn-secondary" href="track-simulator-equations.html">Equations &amp; References</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
-    © Andrew Robinson, PhD | Cycling &amp; bike-fit tool &middot; <a href="index.html">Research, Publications &amp; CV</a>
+    © Andrew Robinson, PhD | Cycling, bike-fit &amp; track tools &middot; <a href="track-simulator.html">Track Simulator</a> &middot; <a href="index.html">Research, Publications &amp; CV</a>
   </footer>
 
   <script src="bikes.js"></script>

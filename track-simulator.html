@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track Cycling Standing-Start Performance Simulator</title>
+<meta name="description" content="Physics-based predictor for 1 km, 4 km and Hour track performances from a standing start: torque-cadence limited acceleration, standing vs seated CdA, velodrome bends, rolling resistance, drivetrain efficiency and system inertia, with optimal pacing.">
+<style>
+/* ===== Site shell: matches index.html / cycling.html ===== */
+:root {
+  --bg: #f5f7fb; --card: #ffffff; --text: #1f2937; --muted: #6b7280;
+  --accent: #1d4ed8; --accent-dark: #1e3a8a; --accent-soft: #eff6ff;
+  --border: #dbe3ee; --shadow: 0 14px 40px rgba(15, 23, 42, 0.08); --max: 1300px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%); color: var(--text); line-height: 1.6; }
+a { color: var(--accent); }
+.site-header { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(219, 227, 238, 0.9); }
+.nav { max-width: var(--max); margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.brand { font-weight: 800; text-decoration: none; color: var(--text); letter-spacing: 0.2px; }
+.nav-links { display: flex; flex-wrap: wrap; gap: 16px; }
+.nav-links a { text-decoration: none; color: var(--muted); font-weight: 700; }
+.nav-links a:hover { color: var(--accent); }
+.nav-links a.nav-cta { color: var(--accent); }
+.container { max-width: var(--max); margin: 0 auto; padding: 34px 20px 60px; }
+.hero-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 34px; margin-bottom: 8px; }
+.eyebrow { margin: 0 0 10px; color: var(--accent); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.hero-card h1 { margin: 0 0 10px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; }
+.lead { font-size: 1.05rem; color: #334155; margin: 0; max-width: 78ch; }
+.button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.btn { display: inline-block; padding: 12px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.2s ease; border: 1px solid transparent; cursor: pointer; font-size: 1rem; font-family: inherit; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: white; color: var(--accent); border-color: var(--accent); }
+.btn-secondary:hover { background: #eff6ff; }
+.page-section { scroll-margin-top: 88px; margin-top: 26px; }
+.section-header { margin-bottom: 14px; }
+.section-header h2 { margin: 0 0 6px; font-size: 1.8rem; }
+.section-header p { margin: 0; color: var(--muted); max-width: 78ch; }
+footer { text-align: center; color: var(--muted); padding: 10px 0 20px; font-size: 0.95rem; }
+@media (max-width: 900px) { .nav { flex-direction: column; align-items: flex-start; } .hero-card { padding: 24px; } }
+
+/* ===== Simulator (scoped under #tss-app) ===== */
+#tss-app {
+  --page: #f5f8ff; --surface: #ffffff; --field: #ffffff;
+  --ink: #1f2937; --ink2: #334155; --muted: #6b7280;
+  --grid: #eef2f7; --axis: #cbd5e1; --border: #dbe3ee; --line: #dbe3ee;
+  --accent: #1d4ed8; --accent-dark: #1e3a8a; --accent-ink: #ffffff; --accent-wash: #eff6ff;
+  --s1: #1d4ed8; --s2: #ea580c; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --env: #94a3b8;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px; line-height: 1.5; color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+#tss-app *, #tss-app *::before, #tss-app *::after { box-sizing: border-box; }
+#tss-app [hidden] { display: none !important; }
+#tss-app a { color: var(--accent); }
+#tss-app a.tss-btn { color: var(--ink); display: inline-block; }
+#tss-app .tss-wrap { max-width: 1340px; margin: 0 auto; padding: 20px 16px 48px; }
+#tss-app h1 { font-size: 22px; line-height: 1.25; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; }
+#tss-app h2 { font-size: 15px; margin: 0 0 10px; font-weight: 650; }
+#tss-app h3 { font-size: 13px; margin: 14px 0 6px; font-weight: 650; color: var(--ink2); }
+#tss-app p { margin: 0 0 8px; }
+#tss-app .tss-head { display: flex; gap: 16px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px; }
+#tss-app .tss-sub { color: var(--ink2); max-width: 820px; margin: 0; }
+#tss-app .tss-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+#tss-app button, #tss-app .tss-btn {
+  font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer; line-height: 1.3;
+}
+#tss-app button:hover { background: var(--accent-wash); }
+#tss-app button:focus-visible, #tss-app input:focus-visible, #tss-app select:focus-visible, #tss-app textarea:focus-visible, #tss-app summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#tss-app button.tss-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+#tss-app button.tss-primary:hover { filter: brightness(1.06); }
+#tss-app button[disabled] { opacity: 0.55; cursor: default; }
+#tss-app select { font: inherit; color: inherit; }
+
+/* Event cards */
+#tss-app .tss-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+#tss-app .tss-card { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer; display: block; width: 100%; }
+#tss-app .tss-card:hover { background: var(--surface); border-color: var(--line); }
+#tss-app .tss-card[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+#tss-app .tss-card .lbl { font-size: 12.5px; color: var(--ink2); display: flex; justify-content: space-between; gap: 6px; }
+#tss-app .tss-card .val { font-size: 26px; font-weight: 650; margin: 2px 0 1px; letter-spacing: -0.01em; }
+#tss-app .tss-card .meta { font-size: 12px; color: var(--muted); }
+#tss-app .tss-card .gain { font-size: 12px; color: var(--ink2); margin-top: 4px; min-height: 1.2em; }
+
+/* Layout */
+#tss-app .tss-grid { display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 16px; align-items: start; }
+#tss-app .tss-inputs { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; padding-right: 2px; scrollbar-width: thin; }
+#tss-app .tss-results { min-width: 0; }
+@media (max-width: 1000px) {
+  #tss-app .tss-grid { grid-template-columns: 1fr; }
+  #tss-app .tss-inputs { position: static; max-height: none; overflow: visible; }
+  #tss-app .tss-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Input sections */
+#tss-app details.tss-sec { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; }
+#tss-app details.tss-sec > summary { list-style: none; cursor: pointer; padding: 11px 14px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#tss-app details.tss-sec > summary::-webkit-details-marker { display: none; }
+#tss-app details.tss-sec > summary::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(-45deg); transition: transform .15s; flex: none; }
+#tss-app details.tss-sec[open] > summary::after { transform: rotate(45deg); }
+#tss-app .tss-sec-tag { font-weight: 500; font-size: 12px; color: var(--muted); margin-left: auto; }
+#tss-app .tss-sec-body { padding: 0 14px 12px; }
+#tss-app .tss-field { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 2px 10px; align-items: center; padding: 5px 0; }
+#tss-app .tss-field.wide { grid-template-columns: 1fr; }
+#tss-app .tss-field > label { font-size: 13px; }
+#tss-app .tss-field .hint { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); }
+#tss-app .tss-in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--field); min-width: 0; }
+#tss-app .tss-in:focus-within { border-color: var(--accent); }
+#tss-app .tss-in input, #tss-app .tss-in select { width: 100%; min-width: 0; border: 0; background: transparent; padding: 6px 8px; font: inherit; color: inherit; font-variant-numeric: tabular-nums; outline: none; }
+#tss-app .tss-in input { text-align: right; }
+#tss-app .tss-in input.bad { color: var(--critical); }
+#tss-app .tss-in .u { padding-right: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+#tss-app .tss-in select.unit { width: auto; flex: none; border-left: 1px solid var(--line); border-radius: 0 8px 8px 0; color: var(--ink2); font-size: 12.5px; padding-right: 4px; }
+#tss-app .tss-in input::-webkit-inner-spin-button { opacity: 0.4; }
+#tss-app textarea { width: 100%; min-height: 84px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; resize: vertical; }
+#tss-app .tss-check { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 5px 0; cursor: pointer; }
+#tss-app .tss-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; flex: none; }
+#tss-app .tss-subhead { font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 12px 0 2px; padding-top: 10px; border-top: 1px solid var(--grid); }
+#tss-app .tss-readout { font-size: 12px; color: var(--ink2); background: var(--page); border-radius: 8px; padding: 6px 9px; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+#tss-app .tss-desc { font-size: 12px; color: var(--ink2); margin: 2px 0 6px; }
+#tss-app .tss-inline { display: flex; gap: 8px; align-items: center; }
+#tss-app .tss-inline .tss-in { flex: 1; }
+
+/* Result panels */
+#tss-app .tss-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+#tss-app .tss-hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+#tss-app .tss-hero .ev { font-size: 13px; color: var(--ink2); }
+#tss-app .tss-hero .big { font-size: 52px; font-weight: 650; line-height: 1.05; letter-spacing: -0.02em; }
+#tss-app .tss-hero .sub { color: var(--ink2); font-size: 13px; margin-top: 4px; }
+#tss-app .tss-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; margin-top: 14px; }
+#tss-app .tss-tile { background: var(--page); border-radius: 10px; padding: 9px 11px; }
+#tss-app .tss-tile .l { font-size: 12px; color: var(--ink2); }
+#tss-app .tss-tile .v { font-size: 20px; font-weight: 650; margin-top: 1px; }
+#tss-app .tss-tile .s { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+#tss-app .tss-callout { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-wash); border-radius: 0 8px 8px 0; font-size: 13px; }
+#tss-app .tss-warns { margin-top: 10px; display: grid; gap: 6px; }
+#tss-app .tss-warn { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; background: var(--page); border-radius: 8px; padding: 7px 10px; }
+#tss-app .tss-warn .ic { flex: none; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #0b0b0b; margin-top: 1px; }
+#tss-app .tss-warn.warning .ic { background: var(--warning); }
+#tss-app .tss-warn.serious .ic { background: var(--serious); }
+#tss-app .tss-warn.critical .ic { background: var(--critical); color: #fff; }
+#tss-app .tss-warn b { font-weight: 650; }
+
+/* Chart toolbar */
+#tss-app .tss-toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 10px; }
+#tss-app .tss-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+#tss-app .tss-seg button { border: 0; border-radius: 0; padding: 5px 11px; background: transparent; }
+#tss-app .tss-seg button + button { border-left: 1px solid var(--line); }
+#tss-app .tss-seg button[aria-pressed="true"] { background: var(--accent-wash); color: var(--ink); font-weight: 600; }
+#tss-app .tss-toolbar .tss-check { padding: 0; }
+#tss-app .tss-hover { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); min-height: 36px; align-items: center; padding: 6px 10px; background: var(--page); border-radius: 8px; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+#tss-app .tss-hover b { color: var(--ink); font-weight: 650; font-size: 13px; margin-right: 3px; }
+#tss-app .tss-hover .k { display: inline-block; width: 12px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 5px; }
+
+/* Charts */
+#tss-app .tss-chart { margin-top: 6px; }
+#tss-app .tss-chart + .tss-chart { margin-top: 14px; }
+#tss-app .tss-chart-title { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+#tss-app .tss-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink2); font-weight: 400; }
+#tss-app .tss-legend span { display: inline-flex; align-items: center; gap: 6px; }
+#tss-app .tss-legend i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+#tss-app .tss-svgwrap { position: relative; width: 100%; }
+#tss-app svg.tss-svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+#tss-app .tss-svg text { font-family: inherit; }
+#tss-app .tss-svg .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+#tss-app .tss-svg .gl { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+#tss-app .tss-svg .ax { stroke: var(--axis); stroke-width: 1; shape-rendering: crispEdges; }
+#tss-app .tss-svg .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+#tss-app .tss-svg .vl { stroke: var(--axis); stroke-width: 1; }
+#tss-app .tss-svg .vlt { fill: var(--muted); font-size: 10.5px; }
+#tss-app .tss-svg .ml { fill: var(--ink2); font-size: 11px; font-weight: 600; }
+#tss-app .tss-svg .xh { stroke: var(--ink2); stroke-width: 1; opacity: 0.55; }
+#tss-app .tss-svg .dot { stroke: var(--surface); stroke-width: 2; }
+#tss-app .c-s1 { stroke: var(--s1); } #tss-app .f-s1 { fill: var(--s1); } #tss-app .b-s1 { background: var(--s1); }
+#tss-app .c-s2 { stroke: var(--s2); } #tss-app .f-s2 { fill: var(--s2); } #tss-app .b-s2 { background: var(--s2); }
+#tss-app .c-s3 { stroke: var(--s3); } #tss-app .f-s3 { fill: var(--s3); } #tss-app .b-s3 { background: var(--s3); }
+#tss-app .c-s4 { stroke: var(--s4); } #tss-app .f-s4 { fill: var(--s4); } #tss-app .b-s4 { background: var(--s4); }
+#tss-app .c-s5 { stroke: var(--s5); } #tss-app .f-s5 { fill: var(--s5); } #tss-app .b-s5 { background: var(--s5); }
+#tss-app .c-env { stroke: var(--env); stroke-width: 1.5 !important; opacity: 0.75; } #tss-app .f-env { fill: var(--env); } #tss-app .b-env { background: var(--env); }
+#tss-app .tss-tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.10); white-space: nowrap; z-index: 2; }
+#tss-app .tss-tip b { font-size: 13px; }
+#tss-app .tss-tip .m { color: var(--muted); }
+
+/* Tables */
+#tss-app .tss-tablewrap { overflow-x: auto; }
+#tss-app table.tss-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+#tss-app .tss-table th { text-align: right; font-weight: 600; color: var(--ink2); padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+#tss-app .tss-table td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+#tss-app .tss-table th:first-child, #tss-app .tss-table td:first-child { text-align: left; }
+#tss-app .tss-table tr.hl td { background: var(--accent-wash); }
+#tss-app .tss-table td.muted { color: var(--muted); }
+#tss-app .tss-table .key { display: inline-block; width: 12px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 6px; }
+
+/* Segmented (energy) bar */
+#tss-app .tss-segbar { display: flex; gap: 2px; height: 28px; margin: 6px 0 8px; }
+#tss-app .tss-segbar > div { border-radius: 4px; min-width: 0; display: flex; align-items: center; padding-left: 7px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: visible; }
+#tss-app .tss-segbar > div.dk { color: #0b0b0b; }
+
+#tss-app .tss-optbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 10px; }
+#tss-app .tss-optbar .tss-in { width: auto; }
+#tss-app .tss-progress { font-size: 12px; color: var(--muted); }
+#tss-app .tss-stale { opacity: 0.5; }
+#tss-app .tss-small { font-size: 12px; color: var(--muted); }
+#tss-app .tss-two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
+@media (max-width: 760px) { #tss-app .tss-two { grid-template-columns: 1fr; } #tss-app .tss-hero .big { font-size: 44px; } }
+#tss-app details.tss-methods summary { cursor: pointer; font-weight: 600; }
+#tss-app .tss-methods ul { margin: 6px 0 8px 18px; padding: 0; }
+#tss-app .tss-methods li { margin: 3px 0; }
+#tss-app .tss-methods code { font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--page); padding: 1px 4px; border-radius: 4px; }
+#tss-app .tss-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--page); padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 50; opacity: 0; transition: opacity .2s; pointer-events: none; }
+#tss-app .tss-toast.on { opacity: 1; }
+#tss-app .tss-foot { margin-top: 18px; font-size: 12px; color: var(--muted); }
+@media print { #tss-app .tss-inputs, #tss-app .tss-actions, #tss-app .tss-toolbar, #tss-app .tss-optbar, .site-header { display: none; } #tss-app .tss-grid { grid-template-columns: 1fr; } }
+
+/* ===== Site look for the simulator (cards, buttons, fields, labels) ===== */
+#tss-app .tss-wrap { max-width: none; padding: 0; }
+#tss-app .tss-head { justify-content: flex-end; margin: 0 0 14px; }
+#tss-app .tss-card, #tss-app .tss-panel, #tss-app details.tss-sec { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); }
+#tss-app .tss-card { padding: 16px 18px; transition: border-color .2s ease, box-shadow .2s ease; }
+#tss-app .tss-card:hover { border-color: #bfd3ff; }
+#tss-app .tss-card[aria-selected="true"] { border-color: var(--accent); background: #f5f8ff; box-shadow: inset 0 0 0 1px var(--accent), var(--shadow); }
+#tss-app .tss-card .lbl { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+#tss-app .tss-card .val { font-size: 1.9rem; font-weight: 800; color: var(--ink); }
+#tss-app .tss-card .gain { color: var(--accent); font-weight: 700; }
+#tss-app .tss-panel { padding: 22px 24px; margin-bottom: 18px; }
+#tss-app .tss-grid { gap: 18px; }
+#tss-app .tss-inputs { top: 76px; max-height: calc(100vh - 88px); }
+#tss-app details.tss-sec { margin-bottom: 12px; }
+#tss-app details.tss-sec > summary { padding: 14px 18px; font-weight: 800; font-size: 1rem; color: var(--ink); }
+#tss-app .tss-sec-body { padding: 0 18px 14px; }
+#tss-app .tss-sec-tag { font-weight: 700; }
+#tss-app h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 12px; }
+#tss-app h3 { font-size: 0.95rem; font-weight: 800; }
+#tss-app .tss-field { border-bottom: 1px dashed #eef2f7; padding: 7px 0; }
+#tss-app .tss-field > label { color: #334155; font-size: 0.9rem; }
+#tss-app .tss-field .hint { font-size: 0.78rem; }
+#tss-app .tss-in { border: 1px solid var(--border); border-radius: 9px; }
+#tss-app .tss-in:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12); }
+#tss-app .tss-in input, #tss-app .tss-in select { padding: 7px 9px; font-size: 0.95rem; }
+#tss-app textarea { border: 1px solid var(--border); border-radius: 9px; }
+#tss-app .tss-subhead { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: #94a3b8; border-top: 0; padding-top: 6px; }
+#tss-app .tss-readout { background: #f5f9ff; border: 1px solid #d7e3f5; border-radius: 12px; padding: 8px 11px; color: #334155; }
+#tss-app .tss-check { color: #334155; }
+#tss-app .tss-check input[type="checkbox"] { width: 17px; height: 17px; }
+#tss-app button, #tss-app .tss-btn { font-family: inherit; font-weight: 700; border-radius: 10px; padding: 8px 14px; font-size: 0.9rem; background: #fff; color: var(--accent); border: 1px solid var(--accent); transition: 0.2s ease; }
+#tss-app button:hover, #tss-app .tss-btn:hover { background: #eff6ff; }
+#tss-app button.tss-primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 800; border-radius: 12px; padding: 10px 18px; }
+#tss-app button.tss-primary:hover { background: var(--accent-dark); filter: none; }
+#tss-app .tss-card, #tss-app .tss-card:hover { color: var(--ink); background: var(--surface); }
+#tss-app .tss-card[aria-selected="true"] { background: #f5f8ff; }
+#tss-app .tss-seg { border-color: var(--border); border-radius: 10px; }
+#tss-app .tss-seg button { border: 0; border-radius: 0; color: #334155; font-weight: 700; padding: 7px 13px; background: #fff; }
+#tss-app .tss-seg button + button { border-left: 1px solid var(--border); }
+#tss-app .tss-seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+#tss-app .tss-hero .big { font-weight: 800; }
+#tss-app .tss-hero .ev { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+#tss-app .tss-tile { background: #f5f8ff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 14px; }
+#tss-app .tss-tile .l { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+#tss-app .tss-tile .v { font-weight: 700; }
+#tss-app .tss-callout { background: var(--accent-wash); border: 1px solid #cfe0ff; border-left: 1px solid #cfe0ff; border-radius: 14px; color: #1e3a8a; padding: 14px 16px; font-size: 0.92rem; }
+#tss-app .tss-callout b { color: #1e3a8a; }
+#tss-app .tss-warn { background: #fff7f2; border: 1px solid #ffd8bf; border-radius: 12px; color: #7c2d12; }
+#tss-app .tss-hover { background: #f5f9ff; border: 1px solid #e1ecfb; border-radius: 12px; }
+#tss-app .tss-chart-title { font-weight: 800; font-size: 0.95rem; }
+#tss-app .tss-table th { color: var(--muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+#tss-app .tss-table tr.hl td { background: #f5f8ff; }
+#tss-app .tss-small { font-size: 0.85rem; }
+#tss-app .tss-toast { background: var(--accent-dark); color: #fff; border-radius: 10px; }
+#tss-app .tss-foot { font-size: 0.85rem; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="index.html">Andrew Robinson, PhD</a>
+      <div class="nav-links">
+        <a href="index.html">&larr; Academic Site</a>
+        <a href="cycling.html">Cycling</a>
+        <a href="track-simulator-equations.html">Equations</a>
+        <a class="nav-cta" href="#simulator">Track Simulator</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container" id="top">
+    <section class="hero-card">
+      <p class="eyebrow">Interactive Tool · Track Cycling</p>
+      <h1>Track Standing-Start Simulator</h1>
+      <p class="lead">
+        Physics-based predictions for the 1 km, 4 km and Hour from a standing start. The model steps the
+        equations of motion forward every 0.01 s. It accounts for a torque–cadence-limited start,
+        out-of-saddle versus seated CdA, velodrome bends, rolling resistance, bearing and drivetrain losses,
+        and system plus wheel inertia. It then finds the fastest way to spend your power.
+      </p>
+      <div class="button-row">
+        <a class="btn btn-primary" href="#simulator">Open the Simulator</a>
+        <a class="btn btn-secondary" href="track-simulator-equations.html">Equations &amp; References</a>
+        <a class="btn btn-secondary" href="cycling.html">Back to Cycling</a>
+      </div>
+    </section>
+
+    <section class="page-section" id="simulator">
+<div id="tss-app">
+  <div class="tss-wrap">
+    <div class="tss-head">
+      <div class="tss-actions">
+        <button type="button" data-act="share" title="Copy a link that reproduces these inputs">Copy link</button>
+        <button type="button" data-act="csv" title="Download the simulated trace for the selected event">Export CSV</button>
+        <button type="button" data-act="reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="tss-cards" role="tablist" aria-label="Event"></div>
+
+    <div class="tss-grid">
+      <aside class="tss-inputs" aria-label="Inputs"></aside>
+      <div class="tss-results">
+        <section class="tss-panel" id="tss-summary"></section>
+
+        <section class="tss-panel">
+          <div class="tss-toolbar" role="group" aria-label="Chart options">
+            <div class="tss-seg" data-group="ui.xAxis">
+              <button type="button" data-set="ui.xAxis=time">Time</button><button type="button" data-set="ui.xAxis=dist">Distance</button>
+            </div>
+            <div class="tss-seg" data-group="ui.range">
+              <button type="button" data-set="ui.range=start">First 30 s</button><button type="button" data-set="ui.range=lap">First lap</button><button type="button" data-set="ui.range=full">Full effort</button>
+            </div>
+            <label class="tss-check"><input type="checkbox" data-k="ui.showEnv"> F–v envelope</label>
+            <label class="tss-check"><input type="checkbox" data-k="ui.showOpt"> Optimal</label>
+            <label class="tss-check"><input type="checkbox" data-k="ui.showEven"> Even power</label>
+          </div>
+          <div class="tss-hover" id="tss-hover" aria-live="off"></div>
+          <div class="tss-chart" id="ch-power"></div>
+          <div class="tss-chart" id="ch-speed"></div>
+          <div class="tss-chart" id="ch-cad"></div>
+          <div class="tss-chart" id="ch-w" hidden></div>
+        </section>
+
+        <section class="tss-panel" id="tss-opt">
+          <h2>Optimal power distribution</h2>
+          <p class="tss-small" id="tss-opt-intro"></p>
+          <div class="tss-optbar">
+            <div class="tss-in"><select data-k="opt.constraint" aria-label="Optimisation constraint">
+              <option value="mean">Same average power</option>
+              <option value="wprime">CP / W′ budget (physiological)</option>
+            </select></div>
+            <label class="tss-check" id="tss-floor" title="Stops the maths from choosing an unrideable 'sprint, then coast' plan in short events">Never below <span class="tss-in" style="display:inline-flex;width:84px"><input type="number" step="5" min="0" max="100" data-k="opt.floor" aria-label="Minimum power after the start, percent of average"><span class="u">%</span></span> of average after the start</label>
+            <label class="tss-check"><input type="checkbox" data-k="opt.optStand"> Also optimise time out of the saddle</label>
+            <label class="tss-check"><input type="checkbox" data-k="opt.auto"> Auto-update</label>
+            <button type="button" class="tss-primary" data-act="optimize">Find optimal pacing</button>
+            <span class="tss-progress" id="tss-opt-prog"></span>
+          </div>
+          <div id="tss-opt-body"></div>
+        </section>
+
+        <div class="tss-two">
+          <section class="tss-panel" id="tss-energy"></section>
+          <section class="tss-panel" id="tss-sens"></section>
+        </div>
+
+        <section class="tss-panel" id="tss-splits"></section>
+
+        <section class="tss-panel" id="tss-gears">
+          <h2>Gear sweep</h2>
+          <p class="tss-small">Re-runs this event across real chainring × sprocket combinations near your gear, holding your peak power, peak-power cadence, curve and average power fixed. Small gears hit peak cadence early but spin out; big gears are slow to wind up.</p>
+          <div class="tss-optbar"><button type="button" class="tss-primary" data-act="gears">Run gear sweep</button><span class="tss-progress" id="tss-gear-prog"></span></div>
+          <div id="tss-gear-body"></div>
+          <div class="tss-chart" id="ch-gear" hidden></div>
+        </section>
+
+        <section class="tss-panel">
+          <details class="tss-methods">
+            <summary>Model, equations and assumptions</summary>
+            <div id="tss-methods-body"></div>
+          </details>
+        </section>
+        <p class="tss-foot">All calculations run in your browser. Predictions are only as good as the inputs; CdA and Crr dominate. Calibrate against a known race or track test before trusting absolute times.</p>
+      </div>
+    </div>
+  </div>
+  <div class="tss-toast" id="tss-toast" role="status"></div>
+</div>
+    </section>
+  </main>
+
+  <footer>
+    © Andrew Robinson, PhD | Track standing-start simulator &middot; <a href="track-simulator-equations.html">Equations &amp; references</a> &middot; <a href="cycling.html">Cycling</a> &middot; <a href="index.html">Research, Publications &amp; CV</a>
+  </footer>
+
+<script>
+(function () {
+'use strict';
+const root = document.getElementById('tss-app');
+if (!root) return;
+
+/* ==== ENGINE START ==== */
+const G = 9.80665;
+
+/* Moist-air density (kg/m3) from temperature (C), station pressure (hPa) and RH (%) */
+function airDensity(Tc, p_hPa, RH) {
+  const T = Tc + 273.15;
+  const es = 6.1121 * Math.exp((18.678 - Tc / 234.5) * (Tc / (257.14 + Tc))); // Buck (hPa)
+  const pv = Math.max(0, Math.min(100, RH)) / 100 * es * 100;               // Pa
+  const p = p_hPa * 100;
+  return (p - pv) / (287.058 * T) + pv / (461.495 * T);
+}
+function pressureFromElevation(h) { return 1013.25 * Math.pow(1 - 2.25577e-5 * h, 5.25588); }
+
+/* Velodrome lap: straight, bend (cosine transition / arc / transition), straight, bend.
+   s = 0 at the start of the home straight. Curvature is measured on the black line. */
+function makeTrack(L, R, Lt, finOffset) {
+  R = Math.max(5, R);
+  Lt = Math.max(0, Math.min(Lt, Math.PI * R * 0.95));
+  const kmax = 1 / R, La = Math.PI * R - Lt, B = La + 2 * Lt, S = L / 2 - B;
+  if (!(S > 0)) return null;
+  const bend = (u) => {
+    if (Lt > 0 && u < Lt) return kmax * 0.5 * (1 - Math.cos(Math.PI * u / Lt));
+    if (u < Lt + La || Lt === 0) return kmax;
+    return kmax * 0.5 * (1 + Math.cos(Math.PI * Math.min(1, (u - Lt - La) / Lt)));
+  };
+  return {
+    L, R, Lt, La, B, S, kmax,
+    finish: Math.max(0, S - finOffset),
+    pursuit: S / 2,
+    curv(s) {
+      s = s % L; if (s < 0) s += L;
+      if (s < S) return 0; s -= S;
+      if (s < B) return bend(s); s -= B;
+      if (s < S) return 0; s -= S;
+      return bend(Math.min(s, B));
+    }
+  };
+}
+
+/* Forward simulation of one effort (Heun / RK2 on distance & speed).
+   c     : numeric configuration (see buildCfg)
+   level : the free pacing level (plateau / end power / constant power / custom scale)
+   rec   : 0 = no trace; >0 = trace sampling interval after the first 30 s            */
+function simulate(c, level, rec) {
+  const prof = c.prof;
+  const eta = c.eta, k1 = 60 / (c.D * c.cp), mg = c.m * G, mEff = c.mEff;
+  const dist = c.kind === 'dist' ? c.dist : 0;
+  const dur = c.kind === 'time' ? c.dur : 0;
+  const tLimit = dist ? 3 * 3600 : dur;
+  const track = c.track, startS = c.startS || 0, hC = c.h, rho = c.rho, Crr = c.Crr;
+  const useW = c.Wp > 0 && c.CP > 0, Wp = c.Wp, CP = c.CP;
+  const wcap = !!prof.wcap && useW;
+  const PF = c.PF, seatF = c.seatF, tTr = c.tTr, cdaSt = c.cdaSt, cdaSe = c.cdaSe;
+  const shapeTorque = prof.shape === 'torque';
+  const custom = prof.type === 'custom' ? prof.data : null;
+  const zeroForce = eta * 2 * PF * k1;           // propulsive force at 0 rpm (F-v intercept)
+  const drift = prof.drift || 0;
+  const tau = Math.max(0.05, prof.tau || 1), tSettle = Math.max(0.05, prof.tSettle || 1);
+
+  let t = 0, x = 0, v = 0, W = Wp;
+  let tSit = c.standMode === 'time' ? c.standVal : Infinity;
+  const xUp = c.standMode === 'dist' ? c.standVal : (c.standMode === 'revs' ? c.standVal * c.D : Infinity);
+  let xSit = null;
+  let phase = prof.rise ? 0 : 1;
+  let ta = null, Pa = 0, proga = 0;
+
+  function post(tt, xx) {
+    const prog = dist ? xx / dist : tt / dur;
+    switch (prof.post) {
+      case 'const': return level;
+      case 'lin': {
+        const f = Math.min(1, Math.max(0, (prog - proga) / Math.max(1e-6, 1 - proga)));
+        return Pa + (level - Pa) * f;
+      }
+      case 'settle': {
+        const tg = level * (1 + drift * (prog - 0.5)), tg0 = level * (1 + drift * (proga - 0.5));
+        const f = Math.min(1, (tt - ta) / tSettle);
+        return tg + (Pa - tg0) * 0.5 * (1 + Math.cos(Math.PI * f));
+      }
+      default: {
+        const tg = level * (1 + drift * (prog - 0.5)), tg0 = level * (1 + drift * (proga - 0.5));
+        return tg + (Pa - tg0) * Math.exp(-(tt - ta) / tau);
+      }
+    }
+  }
+
+  function drive(tt, xx, vv, WW, o) {
+    let s = 0;
+    if (tt >= tSit) s = tTr > 0 ? Math.min(1, (tt - tSit) / tTr) : 1;
+    const phi = 1 - s * (1 - seatF);
+    const cda = cdaSt + s * (cdaSe - cdaSt);
+    const Pc = wcap && (prof.wcapAll || phase === 0) ? CP + (PF - CP) * Math.max(0, WW) / Wp : PF;
+    const r = vv * k1;
+    const sh = shapeTorque ? (r <= 1 ? 1 : Math.max(0, 2 - r)) : Math.max(0, 2 - r);
+    const fEnv = eta * Pc * phi * k1 * sh;        // envelope expressed as propulsive force (N)
+    let Pp;
+    if (custom) {
+      const i = Math.floor(tt), f = tt - i, n = custom.length - 1;
+      const a = custom[Math.min(i, n)], b = custom[Math.min(i + 1, n)];
+      Pp = (a + (b - a) * f) * level;
+    } else if (phase === 0) {
+      Pp = prof.rise === 'ramp' ? PF * (prof.p0 + (1 - prof.p0) * Math.min(1, tt / prof.tRise)) : Infinity;
+    } else {
+      Pp = post(tt, xx);
+      if (prof.floor && Pp < prof.floor) Pp = prof.floor;
+    }
+    if (!(Pp > 0)) Pp = 0;
+    const cap = custom ? zeroForce : fEnv;
+    const F = vv > 1e-9 ? Math.min(eta * Pp / vv, cap) : (Pp > 0 ? cap : 0);
+    let kk = 1, n = 1;
+    if (track) {
+      const kap = track.curv(startS + xx);
+      if (kap > 0) {
+        const q = vv * vv * kap / G, rq = Math.sqrt(1 + q * q);
+        kk = 1 - hC * kap * (q / rq);             // CoM speed / wheel speed (lean in bends)
+        n = rq;                                   // tyre load / weight
+      }
+    }
+    const Fa = 0.5 * rho * cda * kk * kk * kk * vv * vv;
+    const Frr = Crr * mg * n;
+    const Fb = 0.091 + 0.0087 * vv;               // wheel-bearing friction (Dahn et al.)
+    let a = (F - Fa - Frr - Fb) / mEff;
+    if (vv <= 0 && a < 0) a = 0;
+    o.a = a; o.F = F; o.P = F * vv / eta; o.env = fEnv * vv / eta; o.cda = cda;
+    o.Fa = Fa; o.Frr = Frr; o.Fb = Fb; o.r = r;
+  }
+
+  const o1 = {}, o2 = {};
+  let Ework = 0, Eaero = 0, Err = 0, Eb = 0;
+  let peakP = 0, peakT = 0, peakX = 0, peakV = 0, vmax = 0;
+  let minW = Wp, wNegX = null, wNegT = null;
+  let tCp = null, xCp = null, finished = false, dnf = false;
+  const splitStep = c.splitStep || 0;
+  let nextSplit = splitStep > 0 ? splitStep : Infinity;
+  const splits = [];
+  const R = rec ? { t: [], x: [], v: [], P: [], cad: [], cda: [], W: [], env: [] } : null;
+  let nextRec = 0;
+  const dtS = c.dtStart || 0.01, dtC = c.dtCruise || (dist ? 0.05 : 0.1);
+
+  while (true) {
+    const dt = t < 30 ? dtS : dtC;
+    drive(t, x, v, W, o1);
+    if (R && t >= nextRec) {
+      R.t.push(t); R.x.push(x); R.v.push(v); R.P.push(o1.P); R.cad.push(o1.r * c.cp);
+      R.cda.push(o1.cda); R.W.push(W); R.env.push(o1.env);
+      nextRec = t + (t < 30 ? 0.05 : rec);
+    }
+    const xp = x + v * dt, vp = Math.max(0, v + o1.a * dt);
+    drive(t + dt, xp, vp, W, o2);
+    const xn = x + 0.5 * (v + vp) * dt;
+    const vn = Math.max(0, v + 0.5 * (o1.a + o2.a) * dt);
+    const Pm = 0.5 * (o1.P + o2.P);
+    let frac = 1;
+    if (dist && xn >= dist) frac = (dist - x) / (xn - x);
+    else if (dur && t + dt >= dur) frac = (dur - t) / dt;
+    const h = dt * frac;
+    const E0 = Ework;
+    Ework += Pm * h;
+    Eaero += 0.5 * (o1.Fa * v + o2.Fa * vp) * h;
+    Err += 0.5 * (o1.Frr * v + o2.Frr * vp) * h;
+    Eb += 0.5 * (o1.Fb * v + o2.Fb * vp) * h;
+    if (useW) {
+      if (Pm > CP) W -= (Pm - CP) * h; else W += (CP - Pm) * (Wp - W) / Wp * h;
+      if (W < minW) minW = W;
+      if (W < 0 && wNegX === null) { wNegX = x; wNegT = t; }
+    }
+    if (o1.P > peakP) { peakP = o1.P; peakT = t; peakX = x; peakV = v; }
+    const xEnd = frac < 1 && dist ? dist : xn;
+    while (nextSplit <= xEnd + 1e-9) {
+      const f = (nextSplit - x) / Math.max(1e-12, xn - x);
+      splits.push({ x: nextSplit, t: t + f * dt, E: E0 + Pm * f * dt });
+      nextSplit += splitStep;
+    }
+    const tn = t + h;
+    x = xEnd; v = frac < 1 ? v + (vn - v) * frac : vn; t = tn;
+    if (v > vmax) vmax = v;
+    if (tSit === Infinity && x >= xUp) tSit = t;
+    if (xSit === null && t >= tSit) xSit = x;
+    const r = v * k1;
+    if (tCp === null && r >= 1) { tCp = t; xCp = x; }
+    if (phase === 0 && prof.rise && prof.end !== 'never') {
+      const trig = prof.end === 'time' ? t >= prof.ta : (r >= 1 || t >= (prof.maxAllOut || 120));
+      if (trig) { phase = 1; ta = t; Pa = o2.P; proga = dist ? x / dist : t / dur; }
+    }
+    if (frac < 1) { finished = true; break; }
+    if (t >= tLimit) break;
+    if (t > 20 && v < 1.0) { dnf = true; break; }
+  }
+  if (R) {
+    drive(t, x, v, W, o1);
+    R.t.push(t); R.x.push(x); R.v.push(v); R.P.push(o1.P); R.cad.push(o1.r * c.cp);
+    R.cda.push(o1.cda); R.W.push(W); R.env.push(o1.env);
+  }
+  if (dur && !dnf) finished = true;
+  const T = dist ? t : dur;
+  return {
+    T: dnf ? Infinity : T, tEnd: t, distance: x, finished, dnf,
+    meanP: t > 0 ? Ework / t : 0, Ework, Eaero, Err, Eb,
+    KE: 0.5 * mEff * v * v, Eloss: (1 - eta) * Ework,
+    peakP, peakT, peakX, peakV, vmax, vEnd: v, cadEnd: v * k1 * c.cp,
+    tSit: tSit === Infinity ? null : tSit, xSit, tCp, xCp, ta, Pa,
+    minW, wNegX, wNegT, Wend: W, splits, rec: R, level
+  };
+}
+
+/* Solve the free pacing level so the effort satisfies its constraint.
+   'mean'   : mean crank power over the effort == target
+   'wprime' : W' balance bottoms out at exactly zero
+   'none'   : no solve                                                        */
+function solveLevel(c, target, constraint, guess) {
+  if (constraint === 'none') {
+    const s = simulate(c, guess != null ? guess : 1, 0);
+    return { level: s.level, ok: true, res: 0, s };
+  }
+  const Wp = c.Wp;
+  const tol = constraint === 'mean' ? 0.02 : 2e-4;
+  const fn = (L) => {
+    const s = simulate(c, L, 0);
+    const val = constraint === 'mean' ? s.meanP - target : -s.minW / Wp;
+    return { L, s, val };
+  };
+  const maxL = Math.max(5 * (target || 0), 3 * c.PF, 100);
+  const g = guess != null && guess > 0 ? guess : (constraint === 'mean' ? target : (c.CP || target) * 1.05);
+  let A = fn(g);
+  if (Math.abs(A.val) < tol) return { level: A.L, ok: true, res: A.val, s: A.s };
+  let B;
+  if (A.val > 0) {
+    B = A;
+    let L = g;
+    for (let i = 0; i < 30; i++) {
+      L = L > 5 ? L * 0.8 : 0;
+      A = fn(L);
+      if (A.val <= 0) break;
+      B = A;
+      if (L === 0) return { level: 0, ok: false, res: A.val, s: A.s };
+    }
+    if (A.val > 0) return { level: A.L, ok: false, res: A.val, s: A.s };
+  } else {
+    let L = g;
+    for (let i = 0; i < 40; i++) {
+      L = Math.min(maxL, Math.max(L * 1.25, L + 5));
+      B = fn(L);
+      if (B.val >= 0) break;
+      A = B;
+      if (L >= maxL) return { level: L, ok: false, res: B.val, s: B.s };
+    }
+  }
+  // A.val < 0 <= B.val : Illinois false-position
+  let side = 0;
+  for (let i = 0; i < 50; i++) {
+    let L = B.L - B.val * (B.L - A.L) / (B.val - A.val);
+    if (!(L > Math.min(A.L, B.L) && L < Math.max(A.L, B.L))) L = 0.5 * (A.L + B.L);
+    const M = fn(L);
+    if (Math.abs(M.val) < tol || Math.abs(B.L - A.L) < 1e-4) return { level: M.L, ok: true, res: M.val, s: M.s };
+    if (M.val < 0) { A = M; if (side === -1) B = { L: B.L, s: B.s, val: B.val / 2 }; side = -1; }
+    else { B = M; if (side === 1) A = { L: A.L, s: A.s, val: A.val / 2 }; side = 1; }
+  }
+  const best = Math.abs(A.val) < Math.abs(B.val) ? A : B;
+  return { level: best.L, ok: Math.abs(best.val) < tol * 50, res: best.val, s: best.s };
+}
+
+/* Nelder-Mead minimiser; async so the page stays responsive. hooks: {yieldFn, onEval, cancelled} */
+async function nelderMead(f, x0, step, maxEval, hooks) {
+  hooks = hooks || {};
+  const n = x0.length;
+  let evals = 0;
+  const call = async (x) => {
+    const v = f(x); evals++;
+    if (hooks.onEval) hooks.onEval(evals);
+    if (hooks.yieldFn) await hooks.yieldFn();
+    if (hooks.cancelled && hooks.cancelled()) throw new Error('cancelled');
+    return v;
+  };
+  let P = [x0.slice()], F = [await call(x0)];
+  for (let i = 0; i < n; i++) { const xi = x0.slice(); xi[i] += step; P.push(xi); F.push(await call(xi)); }
+  const add = (a, b, s) => a.map((ai, i) => ai + s * (b[i] - ai));
+  while (evals < maxEval) {
+    const idx = F.map((v, i) => i).sort((i, j) => F[i] - F[j]);
+    P = idx.map((i) => P[i]); F = idx.map((i) => F[i]);
+    if (Math.abs(F[n] - F[0]) < 1e-5 * (1 + Math.abs(F[0]))) {
+      let size = 0;
+      for (let i = 1; i <= n; i++) for (let j = 0; j < n; j++) size = Math.max(size, Math.abs(P[i][j] - P[0][j]));
+      if (size < 1e-3) break;
+    }
+    const cen = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) cen[j] += P[i][j] / n;
+    const xr = add(cen, P[n], -1), fr = await call(xr);
+    if (fr < F[0]) {
+      const xe = add(cen, P[n], -2), fe = await call(xe);
+      if (fe < fr) { P[n] = xe; F[n] = fe; } else { P[n] = xr; F[n] = fr; }
+    } else if (fr < F[n - 1]) { P[n] = xr; F[n] = fr; }
+    else {
+      const out = fr < F[n];
+      const xc = out ? add(cen, xr, 0.5) : add(cen, P[n], 0.5), fc = await call(xc);
+      if (fc < (out ? fr : F[n])) { P[n] = xc; F[n] = fc; }
+      else { for (let i = 1; i <= n; i++) { P[i] = add(P[0], P[i], 0.5); F[i] = await call(P[i]); } }
+    }
+  }
+  let b = 0; for (let i = 1; i <= n; i++) if (F[i] < F[b]) b = i;
+  return { x: P[b], f: F[b], evals };
+}
+/* ==== ENGINE END ==== */
+
+/* ===================== Configuration ===================== */
+const EVENTS = {
+  k1: { name: '1 km', long: '1 km time trial', kind: 'dist', dist: 1000, split: 125 },
+  p4: { name: '4 km', long: '4 km individual pursuit', kind: 'dist', dist: 4000, split: 250 },
+  hr: { name: 'Hour', long: 'Hour record', kind: 'time', dur: 3600, split: 1000 },
+  cu: { name: 'Custom', long: 'Custom event', kind: null }
+};
+const ORDER = ['k1', 'p4', 'hr', 'cu'];
+
+const CURVES = {
+  fv_exp: { label: 'F–v start → exponential fade', avg: true,
+    desc: 'All-out start limited by a linear torque–cadence profile: maximum torque at 0 rpm, and power peaks when you reach your peak-power cadence. Power then decays exponentially toward a plateau, which is solved so the effort averages your target.' },
+  fv_lin: { label: 'F–v start → linear fade (kilo style)', avg: true,
+    desc: 'All-out torque–cadence-limited start to your peak-power cadence, then power falls in a straight line to the finish. The finishing power is solved to hit your target average.' },
+  fv_settle: { label: 'F–v start → settle onto plateau (pursuit / hour)', avg: true,
+    desc: 'All-out torque–cadence-limited start, then a smooth (cosine) settle onto a plateau over the settle time, with optional drift across the effort. The plateau is solved to hit your target average.' },
+  torque_exp: { label: 'Constant-torque start → exponential fade', avg: true,
+    desc: 'Maximum torque is held constant up to your peak-power cadence, so power rises linearly with rpm, then follows the F–v curve. An exponential fade follows. This is a softer, lower-torque start than the linear torque–cadence model.' },
+  ramp_exp: { label: 'Time-based ramp → exponential fade', avg: true,
+    desc: 'Power ramps linearly in time from a starting percentage of peak, reaching peak at your chosen time (still capped by the torque–cadence envelope), then fades exponentially. Use it if you know when your peak happens rather than at what cadence.' },
+  even: { label: 'Even power (torque-limited)', avg: true,
+    desc: 'One constant power from the gun. At low speed the torque limit caps you, so the very start is still torque-limited. It is a baseline for comparison.' },
+  wb_allout: { label: 'All-out, W′-limited (3-parameter CP)', avg: false, phys: true,
+    desc: 'Flat out the entire way. Maximum available power falls from your peak toward CP as W′ is spent (Morton 3-parameter model) and is still shaped by torque–cadence. Average power is an output. Best for 500 m and 1 km.' },
+  wb_paced: { label: 'W′-paced (W′ empty at the line)', avg: false, phys: true,
+    desc: 'All-out start to your peak-power cadence, with available power already falling as W′ drains (3-parameter). Then an exponential fade onto the plateau that leaves W′ exactly empty at the finish. Average power is an output. Suits the 4 km and longer.' },
+  custom: { label: 'Custom 1-s power file', avg: 'opt',
+    desc: 'Paste one power value (W) per second, e.g. from a previous race file. If a line has several numbers, the second is used (time, power, …). Very-low-speed torque is still capped by your F–v intercept. Optionally scaled to your target average.' }
+};
+
+const TIRES = [['2070', '700×18 (2070 mm)'], ['2086', '700×20 (2086 mm)'], ['2096', '700×23 (2096 mm)'], ['2105', '700×25 (2105 mm)'], ['2136', '700×28 (2136 mm)'], ['1944', '650×23 (1944 mm)'], ['custom', 'Custom']];
+
+function ev(o) {
+  return Object.assign({ kind: 'dist', dist: 1000, durMin: 60, curve: 'fv_exp', PF: 1500, cp: 100, Pavg: 500, tau: 10, tSettle: 10, drift: 0, p0: 40, tRise: 5, custom: '', scaleCustom: true, CR: 60, cog: 14, upVal: 5, upUnit: 's', start: 'finish' }, o);
+}
+const DEFAULTS = {
+  v: 1, sel: 'k1',
+  shared: {
+    riderMass: 80, bikeMass: 8, inertia: 0.14, tirePreset: '2096', tireCirc: 2096, crr: 0.0025, eta: 98,
+    cdaSt: 0.32, cdaSe: 0.20, tTr: 1.0, seatF: 95,
+    rhoMode: 'calc', tempC: 24, pressure: 1013, rh: 50, elev: 0, rhoDirect: 1.18,
+    bends: true, lap: 250, bendR: 23, trans: 10, comH: 0.95,
+    physio: false, CP: 400, Wp: 30
+  },
+  events: {
+    k1: ev({ curve: 'fv_exp', PF: 1650, cp: 105, Pavg: 1000, tau: 15, CR: 60, cog: 14, upVal: 8, start: 'finish' }),
+    p4: ev({ curve: 'fv_exp', PF: 1100, cp: 95, Pavg: 470, tau: 6, CR: 62, cog: 14, upVal: 5, start: 'pursuit' }),
+    hr: ev({ curve: 'fv_exp', PF: 700, cp: 90, Pavg: 390, tau: 10, CR: 58, cog: 14, upVal: 4, start: 'finish' }),
+    cu: ev({ kind: 'dist', dist: 500, durMin: 20, curve: 'fv_exp', PF: 1600, cp: 110, Pavg: 1150, tau: 12, CR: 58, cog: 14, upVal: 8, start: 'finish' })
+  },
+  ui: { xAxis: 'time', range: 'full', showEnv: true, showOpt: true, showEven: true },
+  opt: { constraint: 'mean', optStand: false, auto: true, floor: 50 }
+};
+
+/* ===================== Input schema ===================== */
+const F = (k, label, unit, o) => Object.assign({ k, label, unit }, o || {});
+const tauCurves = ['fv_exp', 'torque_exp', 'ramp_exp', 'wb_paced'];
+const SECTIONS = [
+  { id: 'event', title: 'Event & pacing', open: true, tag: () => EVENTS[state.sel].long, fields: [
+    F('e.kind', 'Event type', '', { type: 'select', options: [['dist', 'Fixed distance'], ['time', 'Fixed duration']], show: (e, k) => k === 'cu' }),
+    F('e.dist', 'Distance', 'm', { step: 50, min: 50, max: 100000, show: (e, k) => k === 'cu' && e.kind !== 'time' }),
+    F('e.durMin', 'Duration', 'min', { step: 1, min: 0.5, max: 600, show: (e, k) => k === 'cu' && e.kind === 'time' }),
+    F('e.curve', 'Power-curve model', '', { type: 'select', wide: true, options: Object.keys(CURVES).map((k) => [k, CURVES[k].label]) }),
+    { type: 'html', id: 'curveDesc' },
+    F('e.PF', 'Peak power off the line', 'W', { step: 10, min: 100, max: 4000, hint: 'Highest power of the (standing) start' }),
+    F('e.cp', 'Cadence at peak power', 'rpm', { step: 1, min: 30, max: 220, hint: 'Sets the torque–cadence profile: max torque = 2 × peak power ÷ this cadence' }),
+    F('e.Pavg', 'Target average power', 'W', { step: 5, min: 30, max: 3000, show: (e) => usesAvg(e), hint: 'Mean crank power over the whole effort, start included' }),
+    F('e.tau', 'Fade time constant τ', 's', { step: 0.5, min: 0.2, max: 600, show: (e) => tauCurves.includes(e.curve), hint: 'Power covers 63 % of the drop from peak to plateau in τ seconds' }),
+    F('e.tSettle', 'Settle time', 's', { step: 1, min: 0.2, max: 600, show: (e) => e.curve === 'fv_settle' }),
+    F('e.drift', 'Plateau drift', '%', { step: 1, min: -40, max: 40, show: (e) => e.curve === 'fv_settle', hint: 'Change over the effort; negative = fading, positive = building' }),
+    F('e.p0', 'Ramp starts at', '% of peak', { step: 5, min: 0, max: 100, show: (e) => e.curve === 'ramp_exp' }),
+    F('e.tRise', 'Time to peak power', 's', { step: 0.5, min: 0.2, max: 120, show: (e) => e.curve === 'ramp_exp' }),
+    F('e.custom', 'Power data (W, 1 value per second)', '', { type: 'textarea', show: (e) => e.curve === 'custom' }),
+    F('e.scaleCustom', 'Scale the data to the target average', '', { type: 'check', show: (e) => e.curve === 'custom' }),
+    { type: 'sub', label: 'Gearing' },
+    F('e.CR', 'Chainring', 'teeth', { step: 1, min: 30, max: 80 }),
+    F('e.cog', 'Sprocket', 'teeth', { step: 1, min: 10, max: 22 }),
+    { type: 'html', id: 'gearInfo' },
+    { type: 'sub', label: 'Start' },
+    F('e.upVal', 'Out of the saddle for', '', { type: 'numunit', unitKey: 'e.upUnit', step: 0.5, min: 0, max: 5000, units: [['s', 's'], ['m', 'm'], ['revs', 'pedal revs']], hint: 'How long you stay standing before sitting into position' }),
+    F('e.start', 'Start line', '', { type: 'select', wide: true, options: [['finish', 'Finish line (end of home straight)'], ['pursuit', 'Pursuit line (middle of the straight)']] })
+  ] },
+  { id: 'aero', title: 'Position & aerodynamics', open: true, fields: [
+    F('s.cdaSt', 'CdA standing (out of saddle)', 'm²', { step: 0.005, min: 0.1, max: 1.0, hint: 'Typical sprint/standing 0.28–0.38' }),
+    F('s.cdaSe', 'CdA seated (race position)', 'm²', { step: 0.001, min: 0.08, max: 0.6, hint: 'Elite pursuit ≈ 0.16–0.19 · kilo ≈ 0.19–0.23' }),
+    F('s.tTr', 'Sit-down transition', 's', { step: 0.1, min: 0, max: 10, hint: 'CdA and power capacity blend from standing to seated over this time' }),
+    F('s.seatF', 'Seated max-power capacity', '%', { step: 1, min: 50, max: 110, hint: 'Seated vs standing power on the F–v curve; 100 = no penalty for sitting early' })
+  ] },
+  { id: 'mass', title: 'Mass, tyres & drivetrain', open: true, fields: [
+    F('s.riderMass', 'Rider mass (with kit)', 'kg', { step: 0.5, min: 30, max: 160 }),
+    F('s.bikeMass', 'Bike mass', 'kg', { step: 0.1, min: 3, max: 25 }),
+    { type: 'html', id: 'massInfo' },
+    F('s.inertia', 'Wheel moment of inertia (both)', 'kg·m²', { step: 0.01, min: 0, max: 0.6, hint: 'Adds I ÷ r² to the accelerating mass · typical 0.10–0.16 (disc + 3/5-spoke)' }),
+    F('s.tirePreset', 'Tyre', '', { type: 'select', options: TIRES }),
+    F('s.tireCirc', 'Rolling circumference', 'mm', { step: 1, min: 1500, max: 2400 }),
+    F('s.crr', 'Rolling resistance Crr', '', { step: 0.0001, min: 0, max: 0.02, hint: 'Indoor boards with good tubulars ≈ 0.0018–0.0030' }),
+    F('s.eta', 'Drivetrain efficiency', '%', { step: 0.1, min: 80, max: 100, hint: 'Clean fixed-gear track drivetrain ≈ 97.5–98.5 %' })
+  ] },
+  { id: 'air', title: 'Air density', open: false, tag: () => 'ρ ' + fmt(currentRho(), 4), fields: [
+    F('s.rhoMode', 'Method', '', { type: 'select', options: [['calc', 'From conditions'], ['direct', 'Enter ρ directly']] }),
+    F('s.tempC', 'Air temperature', '°C', { step: 0.5, min: -10, max: 45, show: () => state.shared.rhoMode !== 'direct' }),
+    F('s.pressure', 'Station (barometric) pressure', 'hPa', { step: 1, min: 500, max: 1100, show: () => state.shared.rhoMode !== 'direct', hint: 'Local, not sea-level-corrected; or estimate it from elevation below' }),
+    F('s.elev', 'Elevation (to estimate pressure)', 'm', { step: 10, min: -400, max: 5000, show: () => state.shared.rhoMode !== 'direct', action: ['elev', 'Set pressure'] }),
+    F('s.rh', 'Relative humidity', '%', { step: 1, min: 0, max: 100, show: () => state.shared.rhoMode !== 'direct' }),
+    F('s.rhoDirect', 'Air density ρ', 'kg/m³', { step: 0.001, min: 0.6, max: 1.4, show: () => state.shared.rhoMode === 'direct' }),
+    { type: 'html', id: 'rhoInfo' }
+  ] },
+  { id: 'track', title: 'Velodrome', open: false, fields: [
+    F('s.bends', 'Model bend effects (lean & tyre load)', '', { type: 'check', hint: 'Turn off if your CdA/Crr came from on-track testing that already includes them' }),
+    F('s.lap', 'Lap length', 'm', { step: 1, min: 133, max: 500 }),
+    F('s.bendR', 'Bend radius (black line)', 'm', { step: 0.5, min: 10, max: 60 }),
+    F('s.trans', 'Transition (spiral) length', 'm', { step: 1, min: 0, max: 40 }),
+    F('s.comH', 'Centre-of-mass height', 'm', { step: 0.01, min: 0.3, max: 1.4, hint: 'Lean in the bends puts the body on a tighter, slower line than the wheels' }),
+    { type: 'html', id: 'trackInfo' }
+  ] },
+  { id: 'phys', title: 'Physiology (optional)', open: false, tag: () => state.shared.physio ? 'on' : 'off', fields: [
+    F('s.physio', 'Use CP / W′ (W′ balance & limits)', '', { type: 'check' }),
+    F('s.CP', 'Critical power (CP)', 'W', { step: 5, min: 50, max: 900, show: () => state.shared.physio }),
+    F('s.Wp', 'W′ (work capacity above CP)', 'kJ', { step: 0.5, min: 1, max: 100, show: () => state.shared.physio }),
+    { type: 'html', id: 'physInfo' }
+  ] }
+];
+
+/* ===================== State ===================== */
+const LS_KEY = 'tss-state-v1';
+const clone = (o) => JSON.parse(JSON.stringify(o));
+function mergeDefaults(def, src) {
+  if (src == null || typeof src !== 'object' || Array.isArray(def)) return src === undefined ? clone(def) : src;
+  const out = {};
+  for (const k in def) out[k] = (k in src) ? (typeof def[k] === 'object' && def[k] !== null ? mergeDefaults(def[k], src[k]) : (typeof src[k] === typeof def[k] ? src[k] : def[k])) : clone(def[k]);
+  return out;
+}
+let fromLink = false;
+function loadState() {
+  try {
+    const m = location.hash.match(/[#&]s=([^&]+)/);
+    if (m) { const j = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); fromLink = true; return mergeDefaults(DEFAULTS, j); }
+  } catch (e) { /* ignore malformed links */ }
+  try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && j.v === 1) return mergeDefaults(DEFAULTS, j); } catch (e) { /* storage unavailable */ }
+  return clone(DEFAULTS);
+}
+let state = loadState();
+if (!EVENTS[state.sel]) state.sel = 'k1';
+let saveTimer = null;
+function persist() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }, 300);
+}
+function getPath(k) {
+  const [ns, f] = k.split('.');
+  const o = ns === 'e' ? state.events[state.sel] : ns === 's' ? state.shared : state[ns];
+  return o ? o[f] : undefined;
+}
+function setPath(k, v) {
+  const [ns, f] = k.split('.');
+  const o = ns === 'e' ? state.events[state.sel] : ns === 's' ? state.shared : state[ns];
+  if (o) o[f] = v;
+}
+
+/* ===================== Helpers ===================== */
+const $ = (s, el) => (el || root).querySelector(s);
+const $$ = (s, el) => Array.from((el || root).querySelectorAll(s));
+const cl = (v, lo, hi, d) => (typeof v === 'number' && isFinite(v)) ? Math.min(hi, Math.max(lo, v)) : d;
+const MINUS = '−';
+function fmt(v, d) {
+  if (v == null || !isFinite(v)) return '—';
+  const s = Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  return (v < 0 && parseFloat(s.replace(/,/g, '')) !== 0 ? MINUS : '') + s;
+}
+function fmtTime(s, d) {
+  if (s == null || !isFinite(s)) return '—';
+  d = d == null ? 3 : d;
+  const p = Math.pow(10, d);
+  s = Math.round(Math.abs(s) * p) / p;
+  const h = Math.floor(s / 3600), m = Math.floor((s - h * 3600) / 60), r = s - h * 3600 - m * 60;
+  const rs = r.toFixed(d).padStart(d ? d + 3 : 2, '0');
+  if (h) return h + ':' + String(m).padStart(2, '0') + ':' + rs;
+  if (m) return m + ':' + rs;
+  return r.toFixed(d);
+}
+const fmtSecs = (s, d) => (s == null || !isFinite(s)) ? '—' : (s >= 60 ? fmtTime(s, d == null ? 1 : d) : fmt(s, d == null ? 1 : d) + ' s');
+function fmtSigned(v, d, unit) {
+  if (v == null || !isFinite(v)) return '—';
+  const r = Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v;
+  return (r > 0 ? '+' : r < 0 ? MINUS : '±') + Math.abs(r).toFixed(d) + (unit || '');
+}
+const fmtDist = (m) => m >= 10000 ? fmt(m / 1000, 3) + ' km' : fmt(m, 0) + ' m';
+function esc(s) { return String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+function interp(xs, ys, xv) {
+  const n = xs.length; if (!n) return NaN;
+  if (xv <= xs[0]) return ys[0];
+  if (xv >= xs[n - 1]) return ys[n - 1];
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= xv) lo = mid; else hi = mid; }
+  const f = (xv - xs[lo]) / ((xs[hi] - xs[lo]) || 1);
+  return ys[lo] + (ys[hi] - ys[lo]) * f;
+}
+function nearestIdx(xs, xv) {
+  let lo = 0, hi = xs.length - 1;
+  if (hi < 0) return -1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= xv) lo = mid; else hi = mid; }
+  return Math.abs(xs[hi] - xv) < Math.abs(xs[lo] - xv) ? hi : lo;
+}
+const yieldNow = (() => {
+  const ch = new MessageChannel(); const q = [];
+  ch.port1.onmessage = () => { const r = q.shift(); if (r) r(); };
+  return () => new Promise((r) => { q.push(r); ch.port2.postMessage(0); });
+})();
+function usesAvg(e) { const c = CURVES[e.curve] || CURVES.fv_exp; return c.avg === true || (c.avg === 'opt' && e.scaleCustom); }
+function parseCustom(txt) {
+  if (!txt) return null;
+  const lines = String(txt).split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const out = [];
+  if (lines.length === 1) {
+    lines[0].split(/[\s,;]+/).forEach((tok) => { const v = parseFloat(tok); if (isFinite(v)) out.push(Math.max(0, v)); });
+  } else {
+    for (const l of lines) {
+      const nums = l.split(/[\s,;\t]+/).map(parseFloat).filter((v) => isFinite(v));
+      if (!nums.length) continue;
+      out.push(Math.max(0, nums.length >= 2 ? nums[1] : nums[0]));
+    }
+  }
+  return out.length ? out : null;
+}
+function currentRho() {
+  const S = state.shared;
+  return S.rhoMode === 'direct' ? cl(S.rhoDirect, 0.5, 1.5, 1.18) : airDensity(cl(S.tempC, -20, 50, 20), cl(S.pressure, 500, 1100, 1013), cl(S.rh, 0, 100, 50));
+}
+function trackPos(c, x) {
+  const tr = c.track;
+  const lap = Math.floor(x / (tr ? tr.L : state.shared.lap)) + 1;
+  if (!tr) return 'lap ' + lap;
+  let s = (c.startS + x) % tr.L;
+  let seg;
+  if (s < tr.S) seg = 'home straight';
+  else if ((s -= tr.S) < tr.B) seg = 'bend 1';
+  else if ((s -= tr.B) < tr.S) seg = 'back straight';
+  else seg = 'bend 2';
+  return 'lap ' + lap + ', ' + seg;
+}
+
+/* ===================== Model configuration ===================== */
+function buildProfile(E) {
+  const tau = cl(E.tau, 0.1, 600, 10);
+  switch (E.curve) {
+    case 'fv_lin': return { rise: 'fv', shape: 'fv', end: 'cadence', maxAllOut: 60, post: 'lin', constraint: 'mean' };
+    case 'fv_settle': return { rise: 'fv', shape: 'fv', end: 'cadence', maxAllOut: 60, post: 'settle', tSettle: cl(E.tSettle, 0.1, 600, 10), drift: cl(E.drift, -50, 50, 0) / 100, constraint: 'mean' };
+    case 'torque_exp': return { rise: 'fv', shape: 'torque', end: 'cadence', maxAllOut: 60, post: 'exp', tau, constraint: 'mean' };
+    case 'ramp_exp': { const tr = cl(E.tRise, 0.2, 120, 5); return { rise: 'ramp', shape: 'fv', end: 'time', ta: tr, tRise: tr, p0: cl(E.p0, 0, 100, 40) / 100, post: 'exp', tau, constraint: 'mean' }; }
+    case 'even': return { rise: null, shape: 'fv', post: 'const', constraint: 'mean' };
+    case 'wb_allout': return { rise: 'fv', shape: 'fv', end: 'never', wcap: true, wcapAll: true, constraint: 'none' };
+    case 'wb_paced': return { rise: 'fv', shape: 'fv', end: 'cadence', maxAllOut: 60, post: 'exp', tau, wcap: true, constraint: 'wprime' };
+    case 'custom': {
+      const data = parseCustom(E.custom);
+      return { type: 'custom', data: data || [0], empty: !data, rise: null, shape: 'fv', constraint: E.scaleCustom ? 'mean' : 'none' };
+    }
+    default: return { rise: 'fv', shape: 'fv', end: 'cadence', maxAllOut: 60, post: 'exp', tau, constraint: 'mean' };
+  }
+}
+function buildCfg(key) {
+  const S = state.shared, E = state.events[key], def = EVENTS[key];
+  const kind = key === 'cu' ? (E.kind === 'time' ? 'time' : 'dist') : def.kind;
+  const dist = kind === 'dist' ? (key === 'cu' ? cl(E.dist, 50, 100000, 1000) : def.dist) : 0;
+  const dur = kind === 'time' ? (key === 'cu' ? cl(E.durMin, 0.5, 600, 60) * 60 : def.dur) : 0;
+  const circ = cl(S.tireCirc, 1500, 2400, 2096) / 1000;
+  const CR = Math.round(cl(E.CR, 20, 90, 60)), cog = Math.round(cl(E.cog, 9, 30, 14));
+  const D = CR / cog * circ;
+  const rw = circ / (2 * Math.PI);
+  const m = cl(S.riderMass, 20, 200, 80) + cl(S.bikeMass, 3, 30, 8);
+  const track = S.bends ? makeTrack(cl(S.lap, 100, 500, 250), cl(S.bendR, 5, 80, 23), cl(S.trans, 0, 60, 10), 6) : null;
+  const unit = E.upUnit;
+  const split = def.split || (kind === 'time' ? 1000 : dist <= 1500 ? 125 : dist <= 6000 ? 250 : 1000);
+  return {
+    key, kind, dist, dur, D, CR, cog, circ, m,
+    mEff: m + cl(S.inertia, 0, 1, 0.14) / (rw * rw), rho: currentRho(),
+    Crr: cl(S.crr, 0, 0.05, 0.0025), eta: cl(S.eta, 50, 100, 98) / 100,
+    cdaSt: cl(S.cdaSt, 0.05, 1.5, 0.32), cdaSe: cl(S.cdaSe, 0.05, 1.5, 0.2),
+    tTr: cl(S.tTr, 0, 20, 1), seatF: cl(S.seatF, 30, 120, 95) / 100,
+    PF: cl(E.PF, 50, 5000, 1000), cp: cl(E.cp, 20, 250, 100), h: cl(S.comH, 0, 1.6, 0.95),
+    track, trackBad: !!S.bends && !track, startS: track ? (E.start === 'pursuit' ? track.pursuit : track.finish) : 0,
+    standMode: unit === 'm' ? 'dist' : unit === 'revs' ? 'revs' : 'time', standVal: cl(E.upVal, 0, 1e5, 5),
+    CP: S.physio ? cl(S.CP, 50, 1000, 400) : 0, Wp: S.physio ? cl(S.Wp, 1, 100, 30) * 1000 : 0,
+    prof: buildProfile(E), splitStep: split, target: cl(E.Pavg, 10, 5000, 400)
+  };
+}
+const recDtFor = (s) => Math.max(0.1, ((s && s.tEnd) || 60) / 1400);
+
+/* ===================== Computation ===================== */
+let results = {};
+const lastLevel = {};
+const store = { opt: {}, gear: {}, sens: {} };
+let gen = 0;
+
+function sigFor(key) { return JSON.stringify([state.shared, state.events[key], state.opt.constraint, state.opt.optStand, state.opt.floor]); }
+
+function computeEvent(key) {
+  const c = buildCfg(key);
+  const E = state.events[key];
+  const warn = [];
+  let cons = c.prof.constraint;
+  if ((c.prof.wcap || cons === 'wprime') && !(c.Wp > 0)) {
+    warn.push(['serious', '<b>This curve needs CP and W′.</b> Switch on “Physiology” in the inputs. Running it without the W′ limit for now.']);
+    c.prof.wcap = false;
+    if (cons === 'wprime') cons = 'mean';
+  }
+  const lk = key + ':' + E.curve;
+  const guess = cons === 'none' ? 1 : (lastLevel[lk] || (c.prof.post === 'lin' ? c.target * 0.7 : c.target * 0.95));
+  const sol = c.prof.empty ? solveLevel(c, 0, 'none', 0) : solveLevel(c, c.target, cons, guess);
+  if (sol.ok && cons !== 'none') lastLevel[lk] = sol.level;
+  const sim = simulate(c, sol.level, recDtFor(sol.s));
+  const tgt = fmt(c.target) + ' W';
+  if (c.trackBad) warn.push(['warning', '<b>Velodrome geometry is impossible</b> (the bends don’t fit in the lap). Bend effects are off until it is fixed.']);
+  if (c.prof.empty) warn.push(['warning', '<b>No power data yet.</b> Paste 1-second power values into the custom curve box.']);
+  if (!sol.ok && cons === 'mean') {
+    if (sol.res > 0) warn.push(['serious', '<b>Target average is too low for this start.</b> Even backing right off after the start can’t bring the mean down to ' + tgt + ' (achieved ' + fmt(sim.meanP) + ' W). Lower the peak power or peak-power cadence, shorten τ, or raise the target.']);
+    else warn.push(['serious', '<b>Target average can’t be reached:</b> you’re capped by the torque–cadence envelope at ' + fmt(sim.meanP) + ' W. Cadence is probably far above your peak-power cadence for this gear.']);
+  }
+  if (!sol.ok && cons === 'wprime') {
+    if (sol.res < 0) warn.push(['warning', '<b>W′ is never emptied,</b> even fully all-out, because the torque–cadence envelope is the limiter. Results shown are all-out.']);
+    else warn.push(['serious', '<b>The all-out start alone empties W′.</b> Lower peak power or raise W′.']);
+  }
+  if (sim.dnf) warn.push(['critical', '<b>The rider stalls.</b> Power drops to nothing. Check the inputs.']);
+  if (c.prof.end === 'cadence' && (sim.tCp == null || (sim.ta != null && sim.tCp > sim.ta + 0.05))) {
+    warn.push(['warning', '<b>Peak-power cadence (' + fmt(c.cp) + ' rpm) isn’t reached in the first 60 s</b>, so the all-out phase was cut there. The gear is too big for that cadence.']);
+  }
+  if (sim.cadEnd > 1.85 * c.cp) warn.push(['warning', '<b>Very high cadence</b> (' + fmt(sim.cadEnd) + ' rpm vs ' + fmt(c.cp) + ' rpm peak). The F–v envelope is collapsing; consider a bigger gear.']);
+  if (c.Wp > 0 && sim.wNegX != null && !c.prof.wcap) {
+    warn.push(['serious', '<b>W′ runs out at ' + fmtDist(sim.wNegX) + ' (' + fmtSecs(sim.wNegT) + ').</b> By your CP/W′ this plan likely isn’t sustainable. Try a W′ curve or the CP/W′ optimiser.']);
+  }
+  if (c.prof.type === 'custom' && !c.prof.empty && c.prof.data.length < sim.tEnd - 1) warn.push(['warning', 'Your data covers ' + fmtSecs(c.prof.data.length, 0) + '; the last value is held to the finish.']);
+  if (c.prof.empty) return { key, c, cons, sol, sim, warn: warn.filter((w) => w[1].indexOf('No power data') >= 0), even: null };
+  return { key, c, cons, sol, sim, warn, even: null };
+}
+function computeEven(key) {
+  const r = results[key];
+  if (!r) return null;
+  const c = Object.assign({}, r.c, { prof: { rise: null, shape: r.c.prof.shape === 'torque' ? 'torque' : 'fv', post: 'const', constraint: 'mean' } });
+  const target = r.sim.meanP;
+  const sol = solveLevel(c, target, 'mean', target);
+  return { sol, sim: simulate(c, sol.level, recDtFor(sol.s)), c };
+}
+
+function computeAll() {
+  gen++;
+  const t0 = performance.now();
+  for (const k of ORDER) results[k] = computeEvent(k);
+  results[state.sel].even = computeEven(state.sel);
+  renderAll();
+  scheduleBackground();
+  return performance.now() - t0;
+}
+let computeTimer = null;
+function scheduleCompute(delay) {
+  clearTimeout(computeTimer);
+  root.querySelector('.tss-results').classList.add('tss-busy');
+  computeTimer = setTimeout(() => { computeAll(); root.querySelector('.tss-results').classList.remove('tss-busy'); }, delay == null ? 120 : delay);
+}
+
+/* ----- background jobs: sensitivity + auto optimisation ----- */
+let bgTimer = null;
+function scheduleBackground() {
+  clearTimeout(bgTimer);
+  const myGen = gen;
+  bgTimer = setTimeout(async () => {
+    try {
+      await runSensitivity(state.sel, myGen);
+      const st = store.opt[state.sel];
+      if (state.opt.auto && !(st && st.sig === sigFor(state.sel))) await runOptimize(state.sel, myGen);
+    } catch (e) { if (e.message !== 'cancelled') console.error(e); }
+  }, 450);
+}
+
+async function runSensitivity(key, myGen) {
+  const base = results[key];
+  if (!base) return;
+  const sig = sigFor(key);
+  if (store.sens[key] && store.sens[key].sig === sig) { renderSens(); return; }
+  const c0 = base.c, E = state.events[key];
+  const isDist = c0.kind === 'dist';
+  const rows = [
+    ['Seated CdA ' + MINUS + '0.005 m²', (c) => { c.cdaSe -= 0.005; }],
+    ['Standing CdA ' + MINUS + '0.020 m²', (c) => { c.cdaSt -= 0.02; }],
+    ['System mass ' + MINUS + '1 kg', (c) => { c.m -= 1; c.mEff -= 1; }],
+    ['Crr ' + MINUS + '0.0005', (c) => { c.Crr = Math.max(0, c.Crr - 0.0005); }],
+    ['Drivetrain efficiency +1 %', (c) => { c.eta = Math.min(1, c.eta + 0.01); }],
+    ['Air density ' + MINUS + '0.02 kg/m³', (c) => { c.rho -= 0.02; }],
+    ['Peak power +100 W', (c) => { c.PF += 100; }],
+    ['Peak-power cadence +10 rpm', (c) => { c.cp += 10; }],
+    ['Out of saddle +1 ' + (E.upUnit === 'revs' ? 'pedal rev' : E.upUnit), (c) => { c.standVal += 1; }]
+  ];
+  if (base.cons === 'mean') rows.splice(6, 0, ['Average power +10 W', null, (t) => t + 10]);
+  else if (c0.Wp > 0) rows.splice(6, 0, ['CP +10 W', (c) => { c.CP += 10; }]);
+  const out = [];
+  for (const [label, mod, tmod] of rows) {
+    if (gen !== myGen) throw new Error('cancelled');
+    const c = Object.assign({}, c0, { prof: Object.assign({}, c0.prof) });
+    if (mod) mod(c);
+    const target = tmod ? tmod(c0.target) : c0.target;
+    const s = solveLevel(c, target, base.cons, base.sol.level).s;
+    out.push({ label, d: isDist ? s.T - base.sim.T : s.distance - base.sim.distance });
+    await yieldNow();
+  }
+  if (gen !== myGen) throw new Error('cancelled');
+  store.sens[key] = { sig, rows: out, isDist };
+  renderSens();
+}
+
+let optRunning = false;
+async function runOptimize(key, myGen, manual) {
+  const base = results[key];
+  if (!base || base.sim.dnf) return;
+  const E = state.events[key];
+  const consReq = state.opt.constraint;
+  const cons = consReq === 'wprime' && base.c.Wp > 0 ? 'wprime' : 'mean';
+  const target = base.sim.meanP;
+  const c0 = base.c;
+  const isDist = c0.kind === 'dist';
+  const coarse = { dtStart: 0.02, dtCruise: isDist ? 0.1 : 0.25 };
+  const T0 = isDist ? base.sim.T : c0.dur;
+  const taMax = Math.max(2, isDist ? Math.min(0.97 * T0, 240) : 240);
+  // Parameters: all-out duration, settle time constant, [plateau level when W'-limited], [sit-down time]
+  const useW = cons === 'wprime';
+  const B = [[0.3, taMax], [0.2, 60]];
+  const iL = useW ? B.push([c0.CP * 0.9, Math.max(c0.CP * 1.1, c0.PF)]) - 1 : -1;
+  const optStand = !!state.opt.optStand;
+  const iS = optStand ? B.push([0, Math.min(40, taMax)]) - 1 : -1;
+  const sg = (u) => 1 / (1 + Math.exp(-u));
+  const toP = (u) => u.map((ui, i) => B[i][0] + (B[i][1] - B[i][0]) * sg(ui));
+  const toU = (p) => p.map((pi, i) => { const f = Math.min(0.97, Math.max(0.03, (pi - B[i][0]) / (B[i][1] - B[i][0]))); return Math.log(f / (1 - f)); });
+  const shape = c0.prof.shape === 'torque' ? 'torque' : 'fv';
+  const floorW = cons === 'mean' ? target * cl(state.opt.floor, 0, 100, 50) / 100 : 0;
+  const mk = (p, fine) => {
+    // Under CP/W' the 3-parameter cap (available power falls toward CP as W' drains) is the constraint
+    const c = Object.assign({}, c0, fine ? {} : coarse, { prof: { type: 'opt', rise: 'fv', shape, end: 'time', ta: p[0], post: 'exp', tau: p[1], drift: 0, wcap: useW, wcapAll: useW, floor: floorW } });
+    if (iS >= 0) { c.standMode = 'time'; c.standVal = p[iS]; }
+    return c;
+  };
+  let lvl = null;
+  const evalP = (p, fine) => {
+    if (useW) { const s = simulate(mk(p, fine), p[iL], 0); return { ok: true, level: p[iL], res: 0, s }; }
+    return solveLevel(mk(p, fine), target, 'mean', lvl);
+  };
+  const obj = (u) => {
+    const p = toP(u);
+    const sol = evalP(p);
+    const s = sol.s;
+    if (s.dnf || !isFinite(s.T)) return 1e6;
+    let J = isDist ? s.T : -s.distance;
+    if (!sol.ok) J += Math.abs(sol.res) / Math.max(1, target) * (isDist ? 200 : 20000);
+    else if (!useW) lvl = sol.level;
+    return J;
+  };
+  const prog = $('#tss-opt-prog'), btn = $('[data-act="optimize"]');
+  optRunning = true; btn.disabled = true;
+  const sit0 = base.sim.tSit != null ? base.sim.tSit : 5;
+  const ta0 = base.sim.tCp != null ? base.sim.tCp : Math.min(15, taMax * 0.3);
+  const starts = [[Math.min(ta0, taMax * 0.9), 3], [Math.min(taMax * 0.6, ta0 * 2 + 6), 12]];
+  if (useW) { starts[0].push(c0.CP + c0.Wp / T0); starts[1].push(c0.CP + 0.6 * c0.Wp / T0); }
+  if (optStand) starts.forEach((s) => s.push(Math.min(sit0, B[iS][1] * 0.9)));
+  const maxEval = (optStand ? 90 : 60) * (useW ? 1.3 : 1) * (isDist ? 1 : 0.75);
+  let best = null, total = 0;
+  try {
+    for (let i = 0; i < starts.length; i++) {
+      const r = await nelderMead(obj, toU(starts[i]), 0.8, maxEval, {
+        yieldFn: yieldNow,
+        onEval: () => { total++; prog.textContent = 'Optimising… ' + Math.min(99, Math.round(100 * total / (maxEval * starts.length))) + ' %'; },
+        cancelled: () => gen !== myGen && !manual
+      });
+      if (!best || r.f < best.f) best = r;
+    }
+  } catch (e) {
+    optRunning = false; btn.disabled = false; prog.textContent = '';
+    if (e.message === 'cancelled') return; throw e;
+  }
+  const p = toP(best.x);
+  const cf = mk(p, true);
+  const sol = evalP(p, true);
+  const sim = simulate(cf, sol.level, recDtFor(sol.s));
+  optRunning = false; btn.disabled = false; prog.textContent = '';
+  if (gen !== myGen && !manual) return;
+  let allOut = false;
+  if (useW && sim.rec) {   // is the plateau above the W'-limited envelope for most of the effort?
+    let n = 0, cap = 0;
+    for (let i = 0; i < sim.rec.t.length; i++) if (sim.rec.t[i] > p[0]) { n++; if (sim.rec.P[i] >= 0.995 * sim.rec.env[i]) cap++; }
+    allOut = n > 0 && cap / n > 0.8;
+  }
+  store.opt[key] = { sig: sigFor(key), p, sol, sim, cons, target, optStand, c: cf, floorW, allOut, iS, iL };
+  renderOpt(); renderCharts(); renderCards(); renderSplits();
+}
+
+async function runGears(key) {
+  const base = results[key];
+  if (!base) return;
+  const myGen = gen;
+  const c0 = base.c;
+  const isDist = c0.kind === 'dist';
+  const combos = [];
+  for (let cog = 12; cog <= 17; cog++) for (let cr = 44; cr <= 72; cr++) {
+    const d = cr / cog * c0.circ;
+    if (d >= c0.D * 0.84 && d <= c0.D * 1.16) combos.push({ cr, cog, d });
+  }
+  combos.sort((a, b) => a.d - b.d);
+  let list = [];
+  for (const g of combos) {
+    const last = list[list.length - 1];
+    if (last && g.d - last.d < 0.05) { if (Math.abs(g.cog - 14.5) < Math.abs(last.cog - 14.5)) list[list.length - 1] = g; continue; }
+    list.push(g);
+  }
+  if (list.length > 34) { const st = list.length / 34; list = Array.from({ length: 34 }, (_, i) => list[Math.floor(i * st)]); }
+  if (!list.some((g) => g.cr === c0.CR && g.cog === c0.cog)) { list.push({ cr: c0.CR, cog: c0.cog, d: c0.D }); list.sort((a, b) => a.d - b.d); }
+  const prog = $('#tss-gear-prog'), btn = $('[data-act="gears"]');
+  btn.disabled = true;
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const g = list[i];
+    const c = Object.assign({}, c0, { D: g.d, CR: g.cr, cog: g.cog, dtCruise: isDist ? 0.05 : 0.2, prof: Object.assign({}, c0.prof) });
+    const sol = solveLevel(c, c0.target, base.cons, base.sol.level);
+    out.push({ g, T: sol.s.T, dist: sol.s.distance, ok: sol.ok && !sol.s.dnf, cur: g.cr === c0.CR && g.cog === c0.cog });
+    prog.textContent = 'Running ' + (i + 1) + ' / ' + list.length;
+    await yieldNow();
+    if (gen !== myGen) { btn.disabled = false; prog.textContent = ''; return; }
+  }
+  btn.disabled = false; prog.textContent = '';
+  store.gear[key] = { sig: sigFor(key), rows: out, isDist };
+  renderGears();
+}
+
+/* ===================== Charts ===================== */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function niceStep(span, n) {
+  const raw = span / Math.max(1, n);
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const f = raw / mag;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+}
+let chartUid = 0;
+class LineChart {
+  constructor(host, o) {
+    this.o = Object.assign({ height: 200 }, o);
+    this.host = host; this.uid = ++chartUid;
+    host.innerHTML = '';
+    const head = document.createElement('div'); head.className = 'tss-chart-title';
+    this.titleEl = document.createElement('span'); this.titleEl.textContent = o.title || '';
+    this.legendEl = document.createElement('span'); this.legendEl.className = 'tss-legend';
+    head.appendChild(this.titleEl); head.appendChild(this.legendEl); host.appendChild(head);
+    this.wrap = document.createElement('div'); this.wrap.className = 'tss-svgwrap'; host.appendChild(this.wrap);
+    this.svg = sv('svg', { class: 'tss-svg', role: 'img' }, this.wrap);
+    if (o.aria) this.svg.setAttribute('aria-label', o.aria);
+    if (o.localTip) { this.tip = document.createElement('div'); this.tip.className = 'tss-tip'; this.tip.hidden = true; this.wrap.appendChild(this.tip); }
+    this.data = null; this.lastW = 0;
+    if (window.ResizeObserver) new ResizeObserver(() => { const w = this.wrap.clientWidth; if (this.data && Math.abs(w - this.lastW) > 1) this.draw(); }).observe(this.wrap);
+  }
+  set(d) { this.data = d; this.draw(); }
+  draw() {
+    const d = this.data, svg = this.svg;
+    if (!d) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const W = Math.max(260, this.wrap.clientWidth || 600), H = this.o.height;
+    this.lastW = W;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('height', H);
+    const m = { l: 54, r: 14, t: 16, b: 30 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const x0 = d.xDomain[0], x1 = d.xDomain[1] > d.xDomain[0] ? d.xDomain[1] : d.xDomain[0] + 1;
+    const vis = d.series.filter((s) => !s.hidden && s.x && s.x.length);
+    let lo = Infinity, hi = -Infinity;
+    for (const s of vis) {
+      const i0 = Math.max(0, nearestIdx(s.x, x0) - 1), i1 = Math.min(s.x.length - 1, nearestIdx(s.x, x1) + 1);
+      for (let i = i0; i <= i1; i++) { const y = s.y[i]; if (!isFinite(y)) continue; if (y < lo) lo = y; if (y > hi) hi = y; }
+    }
+    (d.hlines || []).forEach((h) => { if (h.y < lo) lo = h.y; if (h.y > hi) hi = h.y; });
+    if (!isFinite(lo)) { lo = 0; hi = 1; }
+    if (d.yMin != null) lo = Math.min(d.yMin, lo);
+    if (hi - lo < 1e-9) { hi = lo + 1; }
+    const span = hi - lo;
+    if (d.yMin == null) lo -= span * 0.06;
+    hi += span * 0.08;
+    const st = niceStep(hi - lo, Math.max(3, Math.round(ph / 42)));
+    const ylo = d.yMin != null && lo >= d.yMin ? d.yMin : Math.floor(lo / st) * st;
+    const yhi = Math.ceil(hi / st) * st;
+    const X = (v) => m.l + (v - x0) / (x1 - x0) * pw;
+    const Y = (v) => m.t + (1 - (v - ylo) / (yhi - ylo)) * ph;
+    this.sc = { X, Y, m, pw, ph, x0, x1, W, H };
+    const g = sv('g', {}, svg);
+    for (let v = ylo; v <= yhi + st * 1e-6; v += st) {
+      const yy = Math.round(Y(v)) + 0.5;
+      sv('line', { x1: m.l, x2: m.l + pw, y1: yy, y2: yy, class: Math.abs(v - ylo) < st * 1e-6 ? 'ax' : 'gl' }, g);
+      const tx = sv('text', { x: m.l - 7, y: yy + 3.5, class: 'tick', 'text-anchor': 'end' }, g);
+      tx.textContent = (d.fmtY || ((t) => fmt(t)))(+v.toFixed(10));
+    }
+    const xs = d.xStep ? d.xStep(x1 - x0, pw) : niceStep(x1 - x0, Math.max(3, Math.round(pw / 90)));
+    for (let v = Math.ceil(x0 / xs - 1e-9) * xs; v <= x1 + xs * 1e-6; v += xs) {
+      const xx = Math.round(X(v)) + 0.5;
+      sv('line', { x1: xx, x2: xx, y1: m.t + ph, y2: m.t + ph + 4, class: 'ax' }, g);
+      const tx = sv('text', { x: xx, y: m.t + ph + 17, class: 'tick', 'text-anchor': 'middle' }, g);
+      tx.textContent = (d.fmtX || ((t) => fmt(t)))(+v.toFixed(10));
+    }
+    if (d.xTitle) { const tx = sv('text', { x: m.l + pw, y: H - 1, class: 'tick', 'text-anchor': 'end' }, g); tx.textContent = d.xTitle; }
+    const clipId = 'tssclip' + this.uid;
+    const defs = sv('defs', {}, svg);
+    const cp = sv('clipPath', { id: clipId }, defs);
+    sv('rect', { x: m.l, y: m.t - 6, width: pw, height: ph + 12 }, cp);
+    (d.hlines || []).forEach((h) => {
+      const yy = Math.round(Y(h.y)) + 0.5;
+      sv('line', { x1: m.l, x2: m.l + pw, y1: yy, y2: yy, class: 'vl' }, g);
+      if (h.label) { const tx = sv('text', { x: m.l + pw - 2, y: yy - 4, class: 'vlt', 'text-anchor': 'end' }, g); tx.textContent = h.label; }
+    });
+    let lastLab = -Infinity;
+    (d.vlines || []).slice().sort((a, b) => a.x - b.x).forEach((vl) => {
+      if (vl.x < x0 || vl.x > x1) return;
+      const xx = Math.round(X(vl.x)) + 0.5;
+      if (xx - m.l < 3) return;                       // collapsed onto the axis at this zoom
+      sv('line', { x1: xx, x2: xx, y1: m.t, y2: m.t + ph, class: 'vl' }, g);
+      if (vl.label && xx - lastLab > 46) { const tx = sv('text', { x: xx + 4, y: m.t + 2, class: 'vlt', 'dominant-baseline': 'hanging' }, g); tx.textContent = vl.label; lastLab = xx; }
+    });
+    const pg = sv('g', { 'clip-path': 'url(#' + clipId + ')' }, svg);
+    for (const s of vis) {
+      const i0 = Math.max(0, nearestIdx(s.x, x0) - 1), i1 = Math.min(s.x.length - 1, nearestIdx(s.x, x1) + 1);
+      const stride = Math.max(1, Math.floor((i1 - i0) / (pw * 1.5)));
+      let dstr = '', first = true;
+      for (let i = i0; i <= i1; i += stride) {
+        const y = s.y[i]; if (!isFinite(y)) { first = true; continue; }
+        dstr += (first ? 'M' : 'L') + X(s.x[i]).toFixed(1) + ',' + Y(y).toFixed(1); first = false;
+      }
+      if (i1 > i0 && (i1 - i0) % stride) dstr += 'L' + X(s.x[i1]).toFixed(1) + ',' + Y(s.y[i1]).toFixed(1);
+      sv('path', { d: dstr, class: 'ln c-' + s.cls, style: s.width ? 'stroke-width:' + s.width : '' }, pg);
+      if (s.dots) for (let i = i0; i <= i1; i++) if (isFinite(s.y[i])) sv('circle', { cx: X(s.x[i]), cy: Y(s.y[i]), r: 3.5, class: 'dot f-' + s.cls }, pg);
+    }
+    (d.marks || []).forEach((mk) => {
+      if (mk.x < x0 || mk.x > x1 || !isFinite(mk.y)) return;
+      sv('circle', { cx: X(mk.x), cy: Y(mk.y), r: mk.r || 4.5, class: 'dot f-' + mk.cls }, svg);
+      if (mk.label) {
+        const right = X(mk.x) < m.l + pw * 0.75;
+        const tx = sv('text', { x: X(mk.x) + (right ? 8 : -8), y: Y(mk.y) - 7, class: 'ml', 'text-anchor': right ? 'start' : 'end' }, svg);
+        tx.textContent = mk.label;
+      }
+    });
+    this.hoverG = sv('g', { 'pointer-events': 'none' }, svg);
+    const ov = sv('rect', { x: m.l, y: m.t, width: pw, height: ph, fill: 'transparent', style: 'cursor:crosshair' }, svg);
+    const toX = (e) => { const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) * (W / r.width); return Math.min(x1, Math.max(x0, x0 + (px - m.l) / pw * (x1 - x0))); };
+    ov.addEventListener('pointermove', (e) => { const xv = toX(e); if (this.o.onHover) this.o.onHover(xv); else this.hover(xv); });
+    ov.addEventListener('pointerdown', (e) => { const xv = toX(e); if (this.o.onHover) this.o.onHover(xv); else this.hover(xv); });
+    ov.addEventListener('pointerleave', () => { if (this.o.onHover) this.o.onHover(null); else this.hover(null); });
+    // legend (>= 2 series)
+    this.legendEl.innerHTML = '';
+    const leg = d.series.filter((s) => !s.hidden && s.legend !== false);
+    if (leg.length >= 2) leg.forEach((s) => {
+      const sp = document.createElement('span'); const k = document.createElement('i'); k.className = 'b-' + s.cls;
+      sp.appendChild(k); sp.appendChild(document.createTextNode(s.name)); this.legendEl.appendChild(sp);
+    });
+    if (this.hx != null) this.hover(this.hx);
+  }
+  hover(xv) {
+    this.hx = xv;
+    const hg = this.hoverG; if (!hg) return;
+    while (hg.firstChild) hg.removeChild(hg.firstChild);
+    if (this.tip) this.tip.hidden = true;
+    const d = this.data, sc = this.sc;
+    if (xv == null || !d || !sc) return;
+    let xs = xv;
+    const vis = d.series.filter((s) => !s.hidden && s.x && s.x.length);
+    let snapI = -1;
+    if (this.o.localTip && vis[0]) { snapI = nearestIdx(vis[0].x, xv); xs = vis[0].x[snapI]; }
+    const xx = sc.X(xs);
+    sv('line', { x1: xx, x2: xx, y1: sc.m.t, y2: sc.m.t + sc.ph, class: 'xh' }, hg);
+    for (const s of vis) {
+      if (s.noDot) continue;
+      const y = this.o.localTip ? s.y[nearestIdx(s.x, xs)] : interp(s.x, s.y, xs);
+      if (!isFinite(y) || xs < s.x[0] || xs > s.x[s.x.length - 1]) continue;
+      sv('circle', { cx: xx, cy: sc.Y(y), r: 4, class: 'dot f-' + s.cls }, hg);
+    }
+    if (this.tip && snapI >= 0 && this.o.tipHtml) {
+      this.tip.innerHTML = this.o.tipHtml(snapI);
+      this.tip.hidden = false;
+      const tw = this.tip.offsetWidth;
+      const left = xx + 12 + tw > sc.W ? xx - 12 - tw : xx + 12;
+      this.tip.style.left = Math.max(0, left) + 'px';
+      this.tip.style.top = (sc.Y(vis[0].y[snapI]) - 46) + 'px';
+    }
+  }
+}
+
+let charts = null;
+function hoverAll(xv) {
+  if (!charts) return;
+  [charts.power, charts.speed, charts.cad, charts.w].forEach((ch) => ch.hover(xv));
+  renderHover(xv);
+}
+function initCharts() {
+  charts = {
+    power: new LineChart($('#ch-power'), { title: 'Power (W)', height: 250, onHover: hoverAll, aria: 'Crank power versus time or distance' }),
+    speed: new LineChart($('#ch-speed'), { title: 'Speed (km/h)', height: 190, onHover: hoverAll, aria: 'Speed versus time or distance' }),
+    cad: new LineChart($('#ch-cad'), { title: 'Cadence (rpm)', height: 190, onHover: hoverAll, aria: 'Cadence versus time or distance' }),
+    w: new LineChart($('#ch-w'), { title: 'W′ balance (kJ)', height: 170, onHover: hoverAll, aria: 'W prime balance' }),
+    gear: new LineChart($('#ch-gear'), { title: '', height: 230, localTip: true, aria: 'Finish time by gear development',
+      tipHtml: (i) => {
+        const g = store.gear[state.sel]; if (!g) return '';
+        const r = g.rows[i];
+        return '<b>' + (g.isDist ? fmtTime(r.T) : fmt(r.dist / 1000, 3) + ' km') + '</b><br><span class="m">' + r.g.cr + '×' + r.g.cog + ' · ' + fmt(r.g.d, 2) + ' m rollout</span>';
+      } })
+  };
+}
+
+/* ===================== Rendering ===================== */
+function fieldHtml(f) {
+  if (f.type === 'html') return '<div class="tss-readout" data-html="' + f.id + '"></div>';
+  if (f.type === 'sub') return '<div class="tss-subhead">' + esc(f.label) + '</div>';
+  const id = 'tss-' + f.k.replace('.', '-');
+  const hint = f.hint ? '<div class="hint">' + esc(f.hint) + '</div>' : '';
+  if (f.type === 'check') return '<div class="tss-field wide" data-f="' + f.k + '"><label class="tss-check"><input type="checkbox" id="' + id + '" data-k="' + f.k + '"> ' + esc(f.label) + '</label>' + hint + '</div>';
+  if (f.type === 'textarea') return '<div class="tss-field wide" data-f="' + f.k + '"><label for="' + id + '">' + esc(f.label) + '</label><textarea id="' + id + '" data-k="' + f.k + '" spellcheck="false" placeholder="e.g. 0 420 980 1350 1620 1710 …"></textarea>' + hint + '</div>';
+  if (f.type === 'select') {
+    const opts = f.options.map((o) => '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>').join('');
+    return '<div class="tss-field' + (f.wide ? ' wide' : '') + '" data-f="' + f.k + '"><label for="' + id + '">' + esc(f.label) + '</label><div class="tss-in"><select id="' + id + '" data-k="' + f.k + '">' + opts + '</select></div>' + hint + '</div>';
+  }
+  const attrs = ' type="number" inputmode="decimal" step="' + (f.step || 'any') + '"' + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '');
+  let ctrl;
+  if (f.type === 'numunit') {
+    ctrl = '<div class="tss-in"><input id="' + id + '" data-k="' + f.k + '"' + attrs + '><select class="unit" data-k="' + f.unitKey + '" aria-label="Unit">' + f.units.map((u) => '<option value="' + u[0] + '">' + esc(u[1]) + '</option>').join('') + '</select></div>';
+    return '<div class="tss-field" data-f="' + f.k + '" style="grid-template-columns:minmax(0,1fr) 172px"><label for="' + id + '">' + esc(f.label) + '</label>' + ctrl + hint + '</div>';
+  }
+  ctrl = '<div class="tss-in"><input id="' + id + '" data-k="' + f.k + '"' + attrs + '>' + (f.unit ? '<span class="u">' + esc(f.unit) + '</span>' : '') + '</div>';
+  if (f.action) ctrl = '<div class="tss-inline">' + ctrl + '<button type="button" data-act="' + f.action[0] + '">' + esc(f.action[1]) + '</button></div>';
+  return '<div class="tss-field" data-f="' + f.k + '"' + (f.action ? ' style="grid-template-columns:minmax(0,1fr) 196px"' : '') + '><label for="' + id + '">' + esc(f.label) + '</label>' + ctrl + hint + '</div>';
+}
+function renderInputs() {
+  const html = SECTIONS.map((s) => '<details class="tss-sec" data-sec="' + s.id + '"' + (s.open ? ' open' : '') + '><summary><span>' + esc(s.title) + '</span><span class="tss-sec-tag" data-tag="' + s.id + '"></span></summary><div class="tss-sec-body">' + s.fields.map(fieldHtml).join('') + '</div></details>').join('');
+  $('.tss-inputs').innerHTML = html;
+}
+function syncInputs() {
+  $$('[data-k]').forEach((el) => {
+    const v = getPath(el.dataset.k);
+    if (el.type === 'checkbox') el.checked = !!v;
+    else if (document.activeElement !== el) {
+      if (el.type === 'number') { if (v != null && isFinite(v)) el.value = String(+(+v).toPrecision(10)); el.classList.remove('bad'); }
+      else if (v != null) el.value = v;
+    }
+  });
+  $$('[data-set]').forEach((b) => { const [k, v] = b.dataset.set.split('='); b.setAttribute('aria-pressed', String(getPath(k) === v)); });
+  syncVisibility();
+}
+function syncVisibility() {
+  const e = state.events[state.sel];
+  for (const s of SECTIONS) for (const f of s.fields) {
+    if (!f.k || !f.show) continue;
+    const el = $('[data-f="' + f.k + '"]');
+    if (el) el.hidden = !f.show(e, state.sel);
+  }
+  for (const s of SECTIONS) { const t = $('[data-tag="' + s.id + '"]'); if (t) t.textContent = s.tag ? s.tag() : ''; }
+  updateReadouts();
+}
+function updateReadouts() {
+  const S = state.shared, e = state.events[state.sel];
+  const set = (id, html) => { const el = $('[data-html="' + id + '"]'); if (el) el.innerHTML = html; };
+  set('curveDesc', esc((CURVES[e.curve] || CURVES.fv_exp).desc));
+  const c = buildCfg(state.sel);
+  const vcp = c.cp * c.D / 60 * 3.6;
+  const gin = c.CR / c.cog * (c.circ * 1000 / Math.PI) / 25.4;
+  set('gearInfo', 'Rollout <b>' + fmt(c.D, 2) + ' m</b> · ' + fmt(gin, 1) + ' gear-inches · ' + fmt(c.cp) + ' rpm = <b>' + fmt(vcp, 1) + ' km/h</b>' + '<br>Max torque at 0 rpm: ' + fmt(2 * c.PF / (2 * Math.PI * c.cp / 60) * (c.prof.shape === 'torque' ? 0.5 : 1)) + ' N·m');
+  set('massInfo', 'System mass <b>' + fmt(c.m, 1) + ' kg</b> · effective (with wheel inertia) ' + fmt(c.mEff, 1) + ' kg');
+  set('rhoInfo', 'ρ = <b>' + fmt(c.rho, 4) + ' kg/m³</b>' + (S.rhoMode !== 'direct' ? ' (moist air)' : ''));
+  const tr = c.track;
+  set('trackInfo', S.bends ? (tr ? 'Straights ' + fmt(tr.S, 1) + ' m · bends ' + fmt(tr.B, 1) + ' m each. Lean at 60 km/h: ' + fmt(Math.atan((60 / 3.6) ** 2 / tr.R / G) * 180 / Math.PI, 0) + '°' : '<b>Bends don’t fit in this lap length.</b> Reduce radius or transition.') : 'Bend effects off: straight-line physics.');
+  set('physInfo', S.physio ? 'W′ balance uses the Skiba differential model. CP/W′ curves also cap available power by W′ (Morton 3-parameter).' : 'Switch on to track W′ balance, flag unsustainable plans and unlock the W′ curves and optimiser.');
+  for (const s of SECTIONS) { const t = $('[data-tag="' + s.id + '"]'); if (t) t.textContent = s.tag ? s.tag() : ''; }
+}
+
+function resultValue(r, opt) {
+  const s = opt || r.sim;
+  return r.c.kind === 'dist' ? fmtTime(s.T) : fmt(s.distance / 1000, 3) + ' km';
+}
+function renderCards() {
+  const host = $('.tss-cards');
+  host.innerHTML = ORDER.map((k) => {
+    const r = results[k]; if (!r) return '';
+    const s = r.sim, c = r.c;
+    const name = k === 'cu' ? (c.kind === 'dist' ? fmtDist(c.dist) + ' (custom)' : fmt(c.dur / 60, c.dur % 60 ? 1 : 0) + ' min (custom)') : EVENTS[k].long;
+    const avgV = (c.kind === 'dist' ? c.dist / s.T : s.distance / c.dur) * 3.6;
+    const o = store.opt[k];
+    let gain = '';
+    if (o && o.sig === sigFor(k)) gain = 'Optimal: ' + (c.kind === 'dist' ? fmtSigned(o.sim.T - s.T, 3, ' s') : fmtSigned(o.sim.distance - s.distance, 0, ' m'));
+    const warnDot = r.warn.length ? ' · ⚠' : '';
+    return '<button type="button" class="tss-card" role="tab" aria-selected="' + (k === state.sel) + '" data-ev="' + k + '"><div class="lbl"><span>' + esc(name) + '</span><span>' + warnDot + '</span></div><div class="val">' + (r.c.prof.empty ? '—' : s.dnf ? 'DNF' : resultValue(r)) + '</div><div class="meta">' + fmt(avgV, 2) + ' km/h · ' + fmt(s.meanP) + ' W avg</div><div class="gain">' + gain + '</div></button>';
+  }).join('');
+}
+
+function levelText(r) {
+  const p = r.c.prof, L = r.sol.level;
+  if (p.type === 'custom') return 'data × ' + fmt(L, 3);
+  if (p.post === 'lin') return 'finishes at ' + fmt(L) + ' W';
+  if (p.post === 'const') return 'constant ' + fmt(L) + ' W';
+  if (p.end === 'never') return 'all-out throughout';
+  return 'plateau ' + fmt(L) + ' W';
+}
+
+function renderSummary() {
+  const r = results[state.sel]; if (!r) return;
+  const s = r.sim, c = r.c, E = state.events[state.sel];
+  const isDist = c.kind === 'dist';
+  const avgV = (isDist ? c.dist / s.T : s.distance / c.dur) * 3.6;
+  const evName = state.sel === 'cu' ? (isDist ? fmtDist(c.dist) + ' custom event' : fmt(c.dur / 60, 1) + ' min custom event') : EVENTS[state.sel].long;
+  const lapL = c.track ? c.track.L : state.shared.lap;
+  const firstLap = s.splits.find((p) => Math.abs(p.x - lapL) < 1e-6) || (s.rec ? { t: interp(s.rec.x, s.rec.t, lapL) } : null);
+  const tiles = [];
+  tiles.push(['Average speed', fmt(avgV, 2) + ' km/h', isDist ? fmtDist(c.dist) + ' in ' + fmtTime(s.T) : 'over ' + fmtTime(c.dur, 0)]);
+  tiles.push(['Average power', fmt(s.meanP) + ' W', usesAvg(E) ? (r.sol.ok ? 'matches target' : 'target ' + fmt(c.target) + ' W') : 'output of CP/W′ model']);
+  tiles.push(['Peak power', fmt(s.peakP) + ' W', 'at ' + fmtSecs(s.peakT, 1) + ' · ' + fmt(s.peakX) + ' m · ' + fmt(s.peakV * 60 / c.D) + ' rpm']);
+  tiles.push(['Peak-power cadence', s.tCp != null ? fmtSecs(s.tCp, 1) : 'not reached', s.tCp != null ? fmt(c.cp) + ' rpm at ' + fmt(s.xCp) + ' m · ' + fmt(c.cp * c.D / 60 * 3.6, 1) + ' km/h' : fmt(c.cp) + ' rpm needs ' + fmt(c.cp * c.D / 60 * 3.6, 1) + ' km/h']);
+  tiles.push(['Sit down', s.tSit != null ? fmtSecs(s.tSit, 1) : '—', s.xSit != null ? 'at ' + fmt(s.xSit) + ' m · ' + fmt(s.xSit / c.D, 1) + ' pedal revs' : 'never sits']);
+  if (firstLap && isFinite(firstLap.t)) tiles.push(['First lap (' + fmt(lapL) + ' m)', fmtTime(firstLap.t), fmt(lapL / firstLap.t * 3.6, 1) + ' km/h from standing']);
+  tiles.push(['Top speed', fmt(s.vmax * 3.6, 1) + ' km/h', 'finishing ' + fmt(s.vEnd * 3.6, 1) + ' km/h · ' + fmt(s.cadEnd) + ' rpm']);
+  tiles.push(['Pacing level', levelText(r).replace(/^\w/, (ch) => ch.toUpperCase()), r.c.Wp > 0 ? 'W′ left at finish ' + fmt(s.Wend / 1000, 1) + ' kJ' : (s.ta != null ? 'all-out phase ' + fmtSecs(s.ta, 1) : CURVES[E.curve].label)]);
+
+  let callout = '';
+  const vcp = c.cp * c.D / 60 * 3.6;
+  if (s.tCp != null) {
+    callout = 'On <b>' + c.CR + '×' + c.cog + '</b> (' + fmt(c.D, 2) + ' m rollout), your peak-power cadence of <b>' + fmt(c.cp) + ' rpm</b> means <b>' + fmt(vcp, 1) + ' km/h</b>. You get there <b>' + fmtSecs(s.tCp, 1) + '</b> after the gun, <b>' + fmt(s.xCp) + ' m</b> into the effort (' + trackPos(c, s.xCp) + '), after ' + fmt(s.xCp / c.D, 1) + ' pedal revolutions. ';
+    if (s.tSit != null && s.tSit < s.tCp - 0.05) callout += 'You sit down ' + fmtSecs(s.tCp - s.tSit, 1) + ' before that, so the seated F–v curve sets your peak (' + fmt(s.peakP) + ' W at ' + fmtSecs(s.peakT, 1) + ').';
+    else if (s.tSit != null) callout += 'You are still out of the saddle there (sitting at ' + fmtSecs(s.tSit, 1) + '), so you get the full standing peak of ' + fmt(s.peakP) + ' W.';
+  } else {
+    callout = 'On <b>' + c.CR + '×' + c.cog + '</b> (' + fmt(c.D, 2) + ' m), ' + fmt(c.cp) + ' rpm needs ' + fmt(vcp, 1) + ' km/h, which you never reach (top speed ' + fmt(s.vmax * 3.6, 1) + ' km/h). Peak power is ' + fmt(s.peakP) + ' W at ' + fmtSecs(s.peakT, 1) + '.';
+  }
+  const warns = r.warn.map((w) => '<div class="tss-warn ' + w[0] + '"><span class="ic" aria-hidden="true">!</span><span><span class="tss-sr" style="position:absolute;left:-9999px">' + w[0] + ': </span>' + w[1] + '</span></div>').join('');
+  $('#tss-summary').innerHTML =
+    '<div class="tss-hero"><div><div class="ev">' + esc(evName) + ' · ' + esc(CURVES[E.curve].label) + '</div><div class="big">' + (r.c.prof.empty ? '—' : s.dnf ? 'DNF' : resultValue(r)) + '</div>' +
+    '<div class="sub">' + (isDist ? 'Predicted time from a standing start' : 'Predicted distance in ' + fmtTime(c.dur, 0)) + ' · ρ ' + fmt(c.rho, 3) + ' · ' + fmt(c.m, 1) + ' kg · CdA ' + fmt(c.cdaSt, 3) + ' → ' + fmt(c.cdaSe, 3) + ' m²</div></div></div>' +
+    (warns ? '<div class="tss-warns">' + warns + '</div>' : '') +
+    '<div class="tss-tiles">' + tiles.map((t) => '<div class="tss-tile"><div class="l">' + esc(t[0]) + '</div><div class="v">' + esc(t[1]) + '</div><div class="s">' + esc(t[2]) + '</div></div>').join('') + '</div>' +
+    '<div class="tss-callout">' + callout + '</div>';
+}
+
+function xDomainFor(r) {
+  const s = r.sim, rec = s.rec, isTime = state.ui.xAxis === 'time';
+  const lapL = r.c.track ? r.c.track.L : state.shared.lap;
+  const tEnd = s.tEnd, xEnd = s.distance;
+  let tMax = tEnd;
+  if (state.ui.range === 'start') tMax = Math.min(30, tEnd);
+  else if (state.ui.range === 'lap') tMax = Math.min(tEnd, interp(rec.x, rec.t, lapL));
+  return isTime ? [0, tMax] : [0, state.ui.range === 'full' ? xEnd : interp(rec.t, rec.x, tMax)];
+}
+const timeFmt = (span) => (v) => span > 150 ? fmtTime(v, 0) : fmt(v) + (span < 1 ? '' : '');
+function timeStep(span, pw) {
+  if (span <= 150) return niceStep(span, Math.max(3, Math.round(pw / 80)));
+  const cands = [30, 60, 120, 300, 600, 900, 1200, 1800];
+  const want = span / Math.max(3, Math.round(pw / 90));
+  return cands.find((c) => c >= want) || 1800;
+}
+function renderCharts() {
+  if (!charts) return;
+  const r = results[state.sel]; if (!r || !r.sim.rec) return;
+  const isTime = state.ui.xAxis === 'time';
+  const dom = xDomainFor(r);
+  const span = dom[1] - dom[0];
+  const fx = isTime ? timeFmt(span) : (span >= 3000 ? (v) => fmt(v / 1000, v % 1000 ? 1 : 0) : (v) => fmt(v));
+  const xTitle = isTime ? (span > 150 ? 'time (m:ss)' : 'time (s)') : (span >= 3000 ? 'distance (km)' : 'distance (m)');
+  const xStep = isTime ? timeStep : null;
+  const o = store.opt[state.sel];
+  const optOk = o && state.ui.showOpt && o.sig === sigFor(state.sel);
+  const ev = r.even && state.ui.showEven ? r.even.sim : null;
+  const trace = (s, f) => (s && s.rec ? { x: isTime ? s.rec.t : s.rec.x, y: s.rec[f] } : null);
+  const mkSeries = (f, map) => {
+    const out = [];
+    const add = (name, cls, s, extra) => { const tr = trace(s, f); if (tr) out.push(Object.assign({ name, cls, x: tr.x, y: map ? tr.y.map(map) : tr.y }, extra || {})); };
+    add('Even power', 's3', ev);
+    add('Optimal', 's2', optOk ? o.sim : null);
+    add('Your plan', 's1', r.sim);
+    return out;
+  };
+  const s = r.sim, c = r.c;
+  const vx = (tv, xv) => (isTime ? tv : xv);
+  const vlines = [];
+  if (s.tSit != null) vlines.push({ x: vx(s.tSit, s.xSit), label: 'sit' });
+  if (s.tCp != null) vlines.push({ x: vx(s.tCp, s.xCp), label: fmt(c.cp) + ' rpm' });
+  const power = mkSeries('P');
+  if (state.ui.showEnv) { const tr = trace(s, 'env'); power.unshift({ name: 'Max available (F–v envelope)', cls: 'env', x: tr.x, y: tr.y, noDot: true }); }
+  charts.power.set({ series: power, xDomain: dom, yMin: 0, fmtX: fx, xStep, xTitle, vlines,
+    marks: [{ x: vx(s.peakT, s.peakX), y: s.peakP, cls: 's1', label: 'Peak ' + fmt(s.peakP) + ' W' }] });
+  charts.speed.set({ series: mkSeries('v', (v) => v * 3.6), xDomain: dom, yMin: 0, fmtX: fx, xStep, xTitle, vlines });
+  charts.cad.set({ series: mkSeries('cad'), xDomain: dom, yMin: 0, fmtX: fx, xStep, xTitle, vlines, hlines: [{ y: c.cp, label: 'peak-power cadence ' + fmt(c.cp) + ' rpm' }] });
+  const wHost = $('#ch-w');
+  if (c.Wp > 0) {
+    wHost.hidden = false;
+    charts.w.set({ series: mkSeries('W', (w) => w / 1000), xDomain: dom, fmtX: fx, xStep, xTitle, vlines, hlines: [{ y: 0, label: 'W′ empty' }] });
+  } else wHost.hidden = true;
+  renderHover(null);
+}
+function renderHover(xv) {
+  const host = $('#tss-hover');
+  const r = results[state.sel];
+  if (!r || !r.sim.rec) return;
+  if (xv == null) { host.innerHTML = '<span>Hover or tap a chart to read values at any point. The splits table below lists every value.</span>'; return; }
+  const isTime = state.ui.xAxis === 'time';
+  const rec = r.sim.rec;
+  const key = isTime ? rec.t : rec.x;
+  const at = (f, s) => { const rr = s.rec; return interp(isTime ? rr.t : rr.x, rr[f], xv); };
+  const t = isTime ? xv : interp(rec.x, rec.t, xv);
+  const x = isTime ? interp(rec.t, rec.x, xv) : xv;
+  const items = [];
+  items.push('<span><b>' + (t >= 60 ? fmtTime(t, 1) : fmt(t, 2) + ' s') + '</b>time</span>');
+  items.push('<span><b>' + fmt(x, 0) + ' m</b>' + esc(trackPos(r.c, x)) + '</span>');
+  items.push('<span><b>' + fmt(interp(key, rec.v, xv) * 3.6, 1) + '</b>km/h</span>');
+  items.push('<span><b>' + fmt(interp(key, rec.cad, xv)) + '</b>rpm</span>');
+  items.push('<span><i class="k b-s1"></i><b>' + fmt(interp(key, rec.P, xv)) + ' W</b>your plan</span>');
+  const o = store.opt[state.sel];
+  if (o && state.ui.showOpt && o.sig === sigFor(state.sel) && o.sim.rec) items.push('<span><i class="k b-s2"></i><b>' + fmt(at('P', o.sim)) + ' W</b>optimal</span>');
+  if (r.even && state.ui.showEven) items.push('<span><i class="k b-s3"></i><b>' + fmt(at('P', r.even.sim)) + ' W</b>even</span>');
+  if (state.ui.showEnv) items.push('<span><b>' + fmt(interp(key, rec.env, xv)) + ' W</b>available</span>');
+  items.push('<span><b>' + fmt(interp(key, rec.cda, xv), 3) + '</b>CdA m²</span>');
+  if (r.c.Wp > 0) items.push('<span><b>' + fmt(interp(key, rec.W, xv) / 1000, 1) + ' kJ</b>W′</span>');
+  host.innerHTML = items.join('');
+}
+
+function describeOpt(o, r) {
+  const s = o.sim, p = o.p, c = o.c;
+  const xa = s.rec ? interp(s.rec.t, s.rec.x, p[0]) : NaN;
+  const isDist = c.kind === 'dist';
+  if (o.allOut) {
+    return '<b>Stay all-out to the line.</b> With CP ' + fmt(c.CP) + ' W and W′ ' + fmt(c.Wp / 1000, 1) + ' kJ, the 3-parameter fatigue limit (available power sliding toward CP as W′ drains) binds for most of this event, so holding anything back only costs time. Peak ' + fmt(s.peakP) + ' W, average ' + fmt(s.meanP) + ' W' + (o.optStand ? ', sitting down at ' + fmtSecs(p[o.iS], 1) : '') + '.';
+  }
+  let txt ='Go <b>all-out</b> (torque–cadence limited) for the first <b>' + fmtSecs(p[0], 1) + '</b> (' + fmt(xa) + ' m), peaking at <b>' + fmt(s.peakP) + ' W</b>';
+  if (o.optStand) txt += ' and sitting down at <b>' + fmtSecs(p[o.iS], 1) + '</b>';
+  txt += '. Then come off it ';
+  txt += p[1] < 2 ? 'almost immediately' : p[1] < 6 ? 'quickly' : 'progressively';
+  txt += ' (τ ≈ ' + fmt(p[1], 1) + ' s) onto <b>≈ ' + fmt(Math.max(s.level, o.floorW || 0)) + ' W</b> and hold it evenly to the ' + (isDist ? 'line' : 'end') + '. ';
+  txt += o.cons === 'wprime' ? 'W′ bottoms out at ' + fmt(s.minW / 1000, 1) + ' kJ, average ' + fmt(s.meanP) + ' W.' :'Average power stays at ' + fmt(s.meanP) + ' W, identical to your plan.';
+  if (o.cons === 'mean' && isDist && p[0] > 0.35 * s.T) {
+    txt += ' In short events the fastest use of a fixed average is a long all-out phase, because the start is where extra watts buy the most time. The ' + fmt(state.opt.floor) + ' % floor (' + fmt(o.floorW) + ' W) keeps the rest rideable. For a fatigue-limited answer, switch on Physiology and use the CP / W′ constraint.';
+  }
+  return txt;
+}
+function renderOpt() {
+  const r = results[state.sel]; if (!r) return;
+  const o = store.opt[state.sel];
+  const fresh = o && o.sig === sigFor(state.sel);
+  const physOn = r.c.Wp > 0;
+  const wOpt = $('[data-k="opt.constraint"] option[value="wprime"]');
+  if (wOpt) wOpt.disabled = !physOn;
+  const useW = state.opt.constraint === 'wprime' && physOn;
+  $('#tss-floor').hidden = useW;
+  $('#tss-opt-intro').innerHTML = 'Searches for the fastest way to deliver your power: an all-out, torque–cadence-limited start of any length, then an exponential settle (any rate) onto an even plateau' + (state.opt.optStand ? ', plus the time to sit down' : '') + '. ' + (useW ? 'Under CP / W′ (CP ' + fmt(r.c.CP) + ' W, W′ ' + fmt(r.c.Wp / 1000, 1) + ' kJ), available power slides from your F–v peak toward CP as W′ drains (3-parameter model). The plateau level is searched too, so the plan spends W′ where it buys the most time.' : 'The plateau is solved so that ') + (useW ? '' :'the average power equals your plan’s (' + fmt(r.sim.meanP) + ' W). Peak power is limited to your F–v envelope.') + (state.opt.constraint === 'wprime' && !physOn ? ' <b>Switch on Physiology to use the CP / W′ constraint.</b>' : '');
+  const body = $('#tss-opt-body');
+  if (!o) { body.innerHTML = '<p class="tss-small">' + (optRunning ? 'Working…' : 'Press “Find optimal pacing”' + (state.opt.auto ? ' (or wait a moment; auto-update is on)' : '') + '.') + '</p>'; return; }
+  const isDist = r.c.kind === 'dist';
+  const cols = [['Your plan', r.sim, 's1', r], ['Optimal', o.sim, 's2', null]];
+  if (r.even) cols.push(['Even power', r.even.sim, 's3', null]);
+  const res = (s) => isDist ? fmtTime(s.T) : fmt(s.distance / 1000, 3) + ' km';
+  const dlt = (s) => isDist ? fmtSigned(s.T - r.sim.T, 3, ' s') : fmtSigned(s.distance - r.sim.distance, 0, ' m');
+  const lapL = r.c.track ? r.c.track.L : state.shared.lap;
+  const lap1 = (s) => { const sp = s.splits.find((q) => Math.abs(q.x - lapL) < 1e-6); return sp ? fmtTime(sp.t) : (s.rec && s.distance >= lapL ? fmtTime(interp(s.rec.x, s.rec.t, lapL)) : '—'); };
+  const rows = [
+    [isDist ? 'Time' : 'Distance', (s) => '<b>' + res(s) + '</b>'],
+    ['vs your plan', dlt],
+    ['Average power', (s) => fmt(s.meanP) + ' W'],
+    ['Peak power', (s) => fmt(s.peakP) + ' W'],
+    ['First lap', lap1],
+    ['All-out phase', (s, i) => i === 1 ? (o.allOut ? 'whole effort' : fmtSecs(o.p[0], 1)) : (i === 0 ? (s.ta != null ? fmtSecs(s.ta, 1) : (r.c.prof.end === 'never' ? 'whole effort' : '—')) : '—')],
+    ['Settles to', (s, i) => i === 0 ? levelText(r) : (i === 1 && o.allOut ? 'all-out throughout' : fmt(i === 1 ? Math.max(s.level, o.floorW || 0) : s.level) + ' W')],
+    ['Sit down', (s) => s.tSit != null ? fmtSecs(s.tSit, 1) : '—']
+  ];
+  if (physOn) rows.push(['Lowest W′', (s) => fmt(s.minW / 1000, 1) + ' kJ']);
+  let html = '<div class="tss-tablewrap' + (fresh ? '' : ' tss-stale') + '"><table class="tss-table"><thead><tr><th></th>' + cols.map((cdef) => '<th><i class="key b-' + cdef[2] + '"></i>' + cdef[0] + '</th>').join('') + '</tr></thead><tbody>' +
+    rows.map((row) => '<tr><td>' + row[0] + '</td>' + cols.map((cdef, i) => '<td>' + row[1](cdef[1], i) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+  html += '<p class="tss-callout' + (fresh ? '' : ' tss-stale') + '" style="margin-top:12px">' + describeOpt(o, r) + '</p>';
+  if (!fresh) html = '<p class="tss-small"><b>Inputs changed:</b> showing the previous result. ' + (state.opt.auto ? 'Updating…' : 'Press “Find optimal pacing” to refresh.') + '</p>' + html;
+  body.innerHTML = html;
+}
+
+function renderEnergy() {
+  const r = results[state.sel]; if (!r) return;
+  const s = r.sim;
+  const parts = [['Aerodynamic drag', s.Eaero, 's1', false], ['Rolling resistance', s.Err, 's2', false], ['Drivetrain loss', s.Eloss, 's3', false], ['Kinetic energy at finish', s.KE, 's4', true], ['Wheel bearings', s.Eb, 's5', false]];
+  const tot = s.Ework;
+  const bar = parts.map((p) => {
+    const share = p[1] / tot * 100;
+    if (share <= 0) return '';
+    const lab = share >= 7 ? fmt(share, 0) + ' %' : '';
+    return '<div class="b-' + p[2] + (p[3] ? ' dk' : '') + '" style="flex:' + share.toFixed(3) + ' 1 0" title="' + esc(p[0] + ': ' + fmt(p[1] / 1000, 1) + ' kJ (' + fmt(share, 1) + ' %)') + '">' + lab + '</div>';
+  }).join('');
+  const isDist = r.c.kind === 'dist';
+  const tbl = '<table class="tss-table"><thead><tr><th>Where your work went</th><th>kJ</th><th>share</th></tr></thead><tbody>' +
+    parts.map((p) => '<tr><td><i class="key b-' + p[2] + '"></i>' + p[0] + '</td><td>' + fmt(p[1] / 1000, 1) + '</td><td>' + fmt(p[1] / tot * 100, 1) + ' %</td></tr>').join('') +
+    '<tr><td><b>Crank work</b></td><td><b>' + fmt(tot / 1000, 1) + '</b></td><td>100 %</td></tr></tbody></table>';
+  const wcda = s.meanP / r.c.cdaSe;
+  $('#tss-energy').innerHTML = '<h2>Energy budget</h2><div class="tss-segbar" role="img" aria-label="Energy split">' + bar + '</div>' + tbl +
+    '<p class="tss-small" style="margin-top:8px">Average W/CdA (seated) ' + fmt(wcda) + ' · W/kg ' + fmt(s.meanP / state.shared.riderMass, 2) + (isDist ? '' : ' · ' + fmt(s.distance / 1000 / (r.c.dur / 3600), 2) + ' km/h average') + '. Energy balance closes to ' + fmt(Math.abs(r.c.eta * s.Ework - s.Eaero - s.Err - s.Eb - s.KE), 1) + ' J.</p>';
+}
+
+function renderSens() {
+  const host = $('#tss-sens');
+  const st = store.sens[state.sel];
+  const r = results[state.sel];
+  if (!st || !r || st.sig !== sigFor(state.sel)) { host.innerHTML = '<h2>What is it worth?</h2><p class="tss-small">Computing…</p>'; return; }
+  host.innerHTML = '<h2>What is it worth?</h2><table class="tss-table"><thead><tr><th>Change (one at a time)</th><th>' + (st.isDist ? 'Time' : 'Distance') + '</th></tr></thead><tbody>' +
+    st.rows.map((row) => '<tr><td>' + esc(row.label) + '</td><td>' + (st.isDist ? fmtSigned(row.d, 3, ' s') : fmtSigned(row.d, 0, ' m')) + '</td></tr>').join('') +
+    '</tbody></table><p class="tss-small" style="margin-top:8px">Each row re-solves the pacing with everything else held fixed' + (r.cons === 'mean' ? ' (same target average power)' : '') + '.</p>';
+}
+
+function renderSplits() {
+  const r = results[state.sel]; if (!r) return;
+  const s = r.sim, c = r.c, isDist = c.kind === 'dist';
+  const o = store.opt[state.sel];
+  const os = o && o.sig === sigFor(state.sel) ? o.sim : null;
+  const rows = s.splits.slice();
+  if (!isDist && (!rows.length || rows[rows.length - 1].x < s.distance - 1e-6)) rows.push({ x: s.distance, t: c.dur, E: s.Ework, final: true });
+  let pt = 0, px = 0, pE = 0;
+  const step = c.splitStep;
+  const label = step === 125 ? 'Half-lap' : step === 1000 ? 'Km' : 'Lap';
+  const tr = rows.map((p, i) => {
+    const dt = p.t - pt, dx = p.x - px, dE = p.E - pE;
+    const ot = os ? (os.splits[i] ? os.splits[i].t : (p.final ? null : null)) : null;
+    const isLap = Math.abs(p.x % (c.track ? c.track.L : state.shared.lap)) < 1e-6;
+    const out = '<tr' + (isLap && step < 250 ? ' class="hl"' : '') + '><td>' + (p.final ? 'Final' : label + ' ' + (i + 1)) + '</td><td>' + fmt(p.x, p.final ? 1 : 0) + '</td><td>' + fmtTime(p.t) + '</td><td>' + fmtTime(dt) + '</td><td>' + fmt(dx / dt * 3.6, 2) + '</td><td>' + fmt(dE / dt) + '</td>' + (os ? '<td>' + (ot != null ? fmtTime(ot) : '—') + '</td><td>' + (ot != null ? fmtSigned(ot - p.t, 3) : '—') + '</td>' : '') + '</tr>';
+    pt = p.t; px = p.x; pE = p.E;
+    return out;
+  }).join('');
+  $('#tss-splits').innerHTML = '<h2>Splits</h2><div class="tss-tablewrap"><table class="tss-table"><thead><tr><th>' + label + '</th><th>Distance (m)</th><th>Elapsed</th><th>Split</th><th>Avg km/h</th><th>Avg W</th>' + (os ? '<th><i class="key b-s2"></i>Optimal elapsed</th><th>Δ</th>' : '') + '</tr></thead><tbody>' + tr + '</tbody></table></div>' +
+    (step === 125 ? '<p class="tss-small" style="margin-top:6px">Shaded rows complete a lap.</p>' : '');
+}
+
+function renderGears() {
+  const body = $('#tss-gear-body'), host = $('#ch-gear');
+  const st = store.gear[state.sel];
+  if (!st) { body.innerHTML = ''; host.hidden = true; return; }
+  const fresh = st.sig === sigFor(state.sel);
+  const rows = st.rows.filter((r) => r.ok);
+  if (!rows.length) { body.innerHTML = '<p class="tss-small">No valid gears.</p>'; host.hidden = true; return; }
+  const val = (r) => st.isDist ? r.T : r.dist;
+  const best = rows.reduce((a, b) => (st.isDist ? val(b) < val(a) : val(b) > val(a)) ? b : a);
+  const cur = rows.find((r) => r.cur);
+  const fv = (r) => st.isDist ? fmtTime(r.T) : fmt(r.dist / 1000, 3) + ' km';
+  const edge = best === rows[0] || best === rows[rows.length - 1];
+  const longEv = !st.isDist || (results[state.sel] && results[state.sel].sim.T > 120);
+  body.innerHTML = '<p class="' + (fresh ? '' : 'tss-stale') + '">' + (fresh ? '' : '<b>Inputs changed.</b> Re-run for current values. ') + 'Fastest: <b>' + best.g.cr + '×' + best.g.cog + '</b> (' + fmt(best.g.d, 2) + ' m) → <b>' + fv(best) + '</b>' +
+    (cur && cur !== best ? ', ' + (st.isDist ? fmtSigned(best.T - cur.T, 3, ' s') : fmtSigned(best.dist - cur.dist, 0, ' m')) + ' vs your ' + cur.g.cr + '×' + cur.g.cog : cur ? ', which is your current gear' : '') + (edge ? ' (at the edge of the range searched)' : '') + '.</p>' +
+    (longEv ? '<p class="tss-small">Caution for long events: the model has no cadence-dependent efficiency for sub-maximal riding, so once you are far below your F–v limit the gear only matters through the start. That biases the 4 km and Hour toward smaller gears than riders actually choose. The sweep is most meaningful for 500 m and 1 km.</p>' : '');
+  host.hidden = false;
+  charts.gear.titleEl.textContent = (st.isDist ? 'Predicted time' : 'Predicted distance (km)') + ' by rollout (m)';
+  const xs = rows.map((r) => r.g.d), ys = rows.map((r) => st.isDist ? r.T : r.dist / 1000);
+  const marks = [{ x: best.g.d, y: val(best) / (st.isDist ? 1 : 1000), cls: 's2', r: 5, label: 'Best ' + best.g.cr + '×' + best.g.cog }];
+  if (cur && cur !== best) marks.push({ x: cur.g.d, y: val(cur) / (st.isDist ? 1 : 1000), cls: 's1', r: 5, label: 'Yours' });
+  charts.gear.set({ series: [{ name: 'Result', cls: 's1', x: xs, y: ys, dots: true }], xDomain: [xs[0] - 0.05, xs[xs.length - 1] + 0.05], fmtX: (v) => fmt(v, 1), xTitle: 'rollout (m)',
+    fmtY: st.isDist ? (v) => fmtTime(v, (Math.max(...ys) - Math.min(...ys)) < 2 ? 1 : 0) : (v) => fmt(v, 2), marks });
+}
+
+function renderMethods() {
+  $('#tss-methods-body').innerHTML = `
+  <h3>Equation of motion</h3>
+  <p>Distance <code>x</code> and wheel speed <code>v</code> are integrated with Heun’s method (0.01 s steps for the first 30 s, then 0.05 s, or 0.1 s for the Hour):</p>
+  <p><code>m<sub>eff</sub>·dv/dt = η·P/v − ½ρ·CdA·k³·v² − Crr·m·g·n − F<sub>bearing</sub></code></p>
+  <ul>
+    <li><b>m<sub>eff</sub></b> = rider + bike + I<sub>wheels</sub>/r²: wheel inertia adds to the mass you accelerate off the line.</li>
+    <li><b>η</b>: drivetrain efficiency. <b>P</b> is crank power.</li>
+    <li><b>CdA</b> is the standing value until you sit, then blends linearly to the seated value over the transition time.</li>
+    <li><b>Bends</b> (optional): lean angle θ = atan(v²κ/g) puts the centre of mass on a tighter line, so the body moves at <code>k·v</code> with <code>k = 1 − h·κ·sinθ</code>. Drag power uses that slower speed. Tyre load rises by <code>n = √(1+(v²κ/g)²)</code>, which scales rolling resistance. The lap uses straights, cosine-spiral transitions and constant-radius arcs.</li>
+    <li><b>Bearings</b>: <code>F = 0.091 + 0.0087·v</code> N (Dahn et al., as used by Martin et al. 1998).</li>
+    <li><b>Air density</b> uses moist air (Buck vapour pressure) from temperature, station pressure and humidity.</li>
+  </ul>
+  <h3>Torque–cadence (F–v) envelope</h3>
+  <p>With a fixed gear, cadence is locked to speed: <code>rpm = 60·v / rollout</code>. Maximum power follows the linear torque–cadence relationship, <code>P<sub>max</sub>(c) = P<sub>peak</sub>·(c/c<sub>p</sub>)·(2 − c/c<sub>p</sub>)</code>. Power is zero at 0 rpm (where torque is highest, 2·P<sub>peak</sub>/ω<sub>p</sub>), peaks at your peak-power cadence c<sub>p</sub>, and falls beyond it. Every curve is capped by this envelope, so the start is always torque-limited and never needs an artificial force limit. After you sit, the envelope is scaled by the seated capacity. The constant-torque option replaces the rising half with a flat torque.</p>
+  <h3>Pacing curves and the solver</h3>
+  <p>Each curve has one free level (plateau, finishing power, constant power or data scale). It is solved with an Illinois false-position search so the effort’s <b>mean crank power</b> (start included) equals your target. W′ curves instead solve so that W′ bottoms out at 1 % of its value at the finish.</p>
+  <h3>Physiology (optional)</h3>
+  <p>W′ balance follows the Skiba differential model: depletion is <code>P − CP</code> above CP, and recovery is <code>(CP − P)·(W′<sub>0</sub> − W′)/W′<sub>0</sub></code> below it. The W′ curves also cap available power at <code>CP + (P<sub>peak</sub> − CP)·W′/W′<sub>0</sub></code> (Morton’s 3-parameter model), still shaped by torque–cadence.</p>
+  <h3>Optimal distribution</h3>
+  <p>Nelder–Mead searches over all-out duration, settle time constant and, optionally, sit-down time. Under the average-power constraint, the even plateau is re-solved for each candidate. Under CP/W′ the 3-parameter cap is the constraint and the plateau level is searched directly. Under a fixed average power, theory (and the optimiser) says: accelerate as hard as the torque envelope allows until you are near cruising speed, then ride evenly. In short events, that pushes toward a very long all-out phase followed by soft-pedalling. The “never below” floor keeps the answer rideable, and the CP/W′ constraint gives the fatigue-limited version.</p>
+  <p>One effect is deliberately left out of the search: speed carried over the line is wasted kinetic energy. Under a strict fixed average, the maths therefore rewards letting power sag through the race and finishing slower (worth roughly half a second in a 4 km, nothing in the Hour). That isn’t a pacing strategy anyone would choose, so the plateau is held even.</p>
+  <h3>Not modelled</h3>
+  <ul><li>Pedalling-rate effects on submaximal efficiency (so gear choice in long events is driven only by the start and the F–v envelope), tyre scrub and steering losses, body-mass kinetic energy changes as you lean in and out of bends, team drafting, track temperature effects on Crr, and reaction time at the gate.</li>
+  <li>Bend effects are already baked into CdA/Crr values derived from velodrome testing with wheel speed. Switch them off in that case to avoid counting them twice.</li></ul>
+  <p class="tss-small"><a href="track-simulator-equations.html">Full list of equations, variables and references →</a></p>
+  <p class="tss-small">Background: Martin et al. (1998) validated road-cycling power model; Martin et al. (2006) sprint modelling with forward integration; Morton (1996) 3-parameter CP model; Skiba et al. (2015) W′ balance; Fitton &amp; Symons (2018) track-cycling simulation.</p>`;
+}
+
+function renderAll() {
+  renderCards();
+  renderSummary();
+  renderCharts();
+  renderOpt();
+  renderEnergy();
+  renderSens();
+  renderSplits();
+  renderGears();
+}
+
+/* ===================== Events ===================== */
+function onInput(ev) {
+  const el = ev.target;
+  const k = el.dataset && el.dataset.k;
+  if (!k) return;
+  let v;
+  if (el.type === 'checkbox') v = el.checked;
+  else if (el.type === 'number') {
+    v = parseFloat(el.value);
+    if (!isFinite(v)) { el.classList.add('bad'); return; }
+    el.classList.remove('bad');
+  } else v = el.value;
+  if (getPath(k) === v) return;
+  setPath(k, v);
+  persist();
+  if (k === 's.tirePreset' && v !== 'custom') { state.shared.tireCirc = parseFloat(v); syncInputs(); }
+  if (k === 's.tireCirc') { const match = TIRES.find((t) => parseFloat(t[0]) === v); state.shared.tirePreset = match ? match[0] : 'custom'; const sel = $('[data-k="s.tirePreset"]'); if (sel) sel.value = state.shared.tirePreset; }
+  if (k === 'e.curve') { if (CURVES[v] && CURVES[v].phys && !state.shared.physio) { state.shared.physio = true; syncInputs(); toast('Physiology (CP / W′) switched on for this curve'); } syncVisibility(); }
+  if (k.startsWith('ui.')) { renderCharts(); renderOpt(); renderSplits(); return; }
+  if (k === 'opt.auto') { if (v) scheduleBackground(); renderOpt(); return; }
+  syncVisibility();
+  scheduleCompute();
+}
+root.addEventListener('input', onInput);
+root.addEventListener('change', onInput);
+root.addEventListener('click', (ev) => {
+  const card = ev.target.closest('[data-ev]');
+  if (card) { selectEvent(card.dataset.ev); return; }
+  const setb = ev.target.closest('[data-set]');
+  if (setb) { const [k, v] = setb.dataset.set.split('='); setPath(k, v); persist(); syncInputs(); renderCharts(); return; }
+  const act = ev.target.closest('[data-act]');
+  if (!act) return;
+  const a = act.dataset.act;
+  if (a === 'optimize') { runOptimize(state.sel, gen, true).catch((e) => console.error(e)); renderOpt(); }
+  else if (a === 'gears') runGears(state.sel).catch((e) => console.error(e));
+  else if (a === 'elev') { state.shared.pressure = Math.round(pressureFromElevation(cl(state.shared.elev, -400, 6000, 0)) * 10) / 10; persist(); syncInputs(); scheduleCompute(0); toast('Pressure set to ' + fmt(state.shared.pressure, 1) + ' hPa'); }
+  else if (a === 'share') shareLink();
+  else if (a === 'csv') exportCsv();
+  else if (a === 'reset') { if (confirm('Reset all inputs to the defaults?')) { state = clone(DEFAULTS); store.opt = {}; store.gear = {}; store.sens = {}; persist(); history.replaceState(null, '', location.pathname + location.search); syncInputs(); computeAll(); } }
+});
+root.addEventListener('keydown', (ev) => {
+  const card = ev.target.closest && ev.target.closest('[data-ev]');
+  if (!card || !['ArrowLeft', 'ArrowRight'].includes(ev.key)) return;
+  const i = ORDER.indexOf(card.dataset.ev) + (ev.key === 'ArrowRight' ? 1 : -1);
+  const k = ORDER[(i + ORDER.length) % ORDER.length];
+  selectEvent(k); const nb = $('[data-ev="' + k + '"]'); if (nb) nb.focus();
+});
+function selectEvent(k) {
+  if (!EVENTS[k] || k === state.sel) return;
+  state.sel = k; persist();
+  syncInputs();
+  if (results[k] && !results[k].even) results[k].even = computeEven(k);
+  gen++;
+  renderAll();
+  scheduleBackground();
+}
+let toastTimer = null;
+function toast(msg) {
+  const t = $('#tss-toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2200);
+}
+function shareLink() {
+  const s = clone(state);
+  let note = '';
+  for (const k of ORDER) if (s.events[k].custom && s.events[k].custom.length > 1500) { s.events[k].custom = ''; note = ' (custom power data not included: too long for a link)'; }
+  const enc = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(s)))));
+  const url = location.href.split('#')[0] + '#s=' + enc;
+  const done = () => toast('Link copied' + note);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url));
+  else prompt('Copy this link:', url);
+}
+function exportCsv() {
+  const r = results[state.sel]; if (!r || !r.sim.rec) return;
+  const R = r.sim.rec;
+  const lines = ['time_s,distance_m,speed_kmh,cadence_rpm,power_W,envelope_W,cda_m2' + (r.c.Wp > 0 ? ',wbal_J' : '')];
+  for (let i = 0; i < R.t.length; i++) lines.push([R.t[i].toFixed(2), R.x[i].toFixed(2), (R.v[i] * 3.6).toFixed(3), R.cad[i].toFixed(1), R.P[i].toFixed(1), R.env[i].toFixed(1), R.cda[i].toFixed(4)].concat(r.c.Wp > 0 ? [R.W[i].toFixed(0)] : []).join(','));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'track-sim-' + state.sel + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ===================== Boot ===================== */
+function consumeLink() {
+  if (!fromLink) return;
+  fromLink = false;
+  persist();
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+  toast('Loaded settings from link');
+}
+window.addEventListener('hashchange', () => {
+  if (!/[#&]s=/.test(location.hash)) return;
+  state = loadState();
+  store.opt = {}; store.gear = {}; store.sens = {};
+  syncInputs(); computeAll(); consumeLink();
+});
+renderInputs();
+renderMethods();
+initCharts();
+syncInputs();
+computeAll();
+consumeLink();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track Standing-Start Simulator: Equations, Variables &amp; References</title>
+<meta name="description" content="Every equation used by the track standing-start performance simulator, which input variable it uses, and the published source behind it.">
+<style>
+/* ===== Site shell: matches index.html / cycling.html ===== */
+:root {
+  --bg: #f5f7fb; --card: #ffffff; --text: #1f2937; --muted: #6b7280;
+  --accent: #1d4ed8; --accent-dark: #1e3a8a; --accent-soft: #eff6ff;
+  --border: #dbe3ee; --shadow: 0 14px 40px rgba(15, 23, 42, 0.08); --max: 1140px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%); color: var(--text); line-height: 1.6; }
+a { color: var(--accent); }
+.site-header { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(219, 227, 238, 0.9); }
+.nav { max-width: var(--max); margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.brand { font-weight: 800; text-decoration: none; color: var(--text); letter-spacing: 0.2px; }
+.nav-links { display: flex; flex-wrap: wrap; gap: 16px; }
+.nav-links a { text-decoration: none; color: var(--muted); font-weight: 700; }
+.nav-links a:hover { color: var(--accent); }
+.nav-links a.nav-cta { color: var(--accent); }
+.container { max-width: var(--max); margin: 0 auto; padding: 34px 20px 60px; }
+.hero-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 34px; margin-bottom: 8px; }
+.eyebrow { margin: 0 0 10px; color: var(--accent); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.hero-card h1 { margin: 0 0 10px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; }
+.lead { font-size: 1.05rem; color: #334155; margin: 0; max-width: 78ch; }
+.button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.btn { display: inline-block; padding: 12px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.2s ease; border: 1px solid transparent; cursor: pointer; font-size: 1rem; font-family: inherit; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: white; color: var(--accent); border-color: var(--accent); }
+.btn-secondary:hover { background: #eff6ff; }
+footer { text-align: center; color: var(--muted); padding: 10px 0 20px; font-size: 0.95rem; }
+@media (max-width: 900px) { .nav { flex-direction: column; align-items: flex-start; } .hero-card { padding: 24px; } }
+
+/* ===== Equations document (scoped under #tss-eq) ===== */
+#tss-eq {
+  --page: #f5f8ff; --surface: #ffffff; --ink: #1f2937; --ink2: #334155; --muted: #6b7280;
+  --grid: #eef2f7; --axis: #cbd5e1; --border: #dbe3ee; --line: #dbe3ee;
+  --accent: #1d4ed8; --accent-wash: #eff6ff; --tag: #f1f5f9;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px; line-height: 1.6; color: var(--ink);
+}
+#tss-eq *, #tss-eq *::before, #tss-eq *::after { box-sizing: border-box; }
+#tss-eq .doc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 30px 34px; margin-top: 26px; }
+@media (max-width: 900px) { #tss-eq .doc-card { padding: 22px 20px; } }
+#tss-eq a:not(.btn) { color: var(--accent); }
+#tss-eq h2 { font-size: 1.6rem; margin: 40px 0 10px; font-weight: 800; padding-top: 22px; border-top: 1px solid var(--grid); scroll-margin-top: 88px; }
+#tss-eq .doc-card > h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+#tss-eq h3 { font-size: 1.05rem; margin: 20px 0 6px; font-weight: 800; }
+#tss-eq p { margin: 0 0 10px; }
+#tss-eq nav.toc { background: #f5f9ff; border: 1px solid #d7e3f5; border-radius: 14px; padding: 16px 20px; margin: 22px 0 0; font-size: 0.95rem; }
+#tss-eq nav.toc b { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
+#tss-eq nav.toc ol { margin: 6px 0 0 18px; padding: 0; columns: 2; column-gap: 28px; }
+#tss-eq nav.toc li { margin: 2px 0; break-inside: avoid; }
+@media (max-width: 680px) { #tss-eq nav.toc ol { columns: 1; } }
+
+/* Equations */
+#tss-eq .eq { display: flex; align-items: center; gap: 12px; background: #fafcff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; margin: 10px 0; overflow-x: auto; }
+#tss-eq .eq .m { flex: 1; font-family: "Cambria Math", "STIX Two Math", "Latin Modern Math", Cambria, Georgia, serif; font-size: 18px; white-space: nowrap; }
+#tss-eq .eq .n { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+#tss-eq .m var { font-style: italic; }
+#tss-eq .m sub, #tss-eq .m sup { font-size: 0.68em; }
+#tss-eq .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 2px; }
+#tss-eq .frac > span:first-child { padding: 0 3px 1px; }
+#tss-eq .frac > span:last-child { border-top: 1px solid currentColor; padding: 1px 3px 0; }
+#tss-eq .src { font-size: 13px; color: var(--ink2); margin: -4px 0 12px; }
+#tss-eq .tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--tag); color: var(--ink2); margin-right: 4px; white-space: nowrap; }
+#tss-eq .tag.model { background: var(--accent-wash); color: var(--ink); }
+#tss-eq .where { font-size: 14px; color: var(--ink2); margin: 0 0 10px 0; padding-left: 14px; border-left: 2px solid var(--grid); }
+#tss-eq .where div { margin: 2px 0; }
+
+/* Tables */
+#tss-eq .tw { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+#tss-eq table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+#tss-eq th { text-align: left; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--axis); white-space: nowrap; position: sticky; top: 0; background: var(--surface); }
+#tss-eq td { padding: 7px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+#tss-eq tr:last-child td { border-bottom: 0; }
+#tss-eq td.sym { font-family: "Cambria Math", Cambria, Georgia, serif; font-size: 15px; white-space: nowrap; }
+#tss-eq td.sym var { font-style: italic; }
+#tss-eq td.eqs a { white-space: nowrap; }
+#tss-eq tr.grp td { background: var(--page); font-weight: 650; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+#tss-eq ol.refs { padding-left: 26px; font-size: 14px; }
+#tss-eq ol.refs li { margin: 6px 0; }
+#tss-eq .note { background: var(--accent-wash); border: 1px solid #cfe0ff; color: #1e3a8a; border-radius: 14px; padding: 10px 14px; font-size: 14px; margin: 12px 0; }
+#tss-eq .foot { margin-top: 32px; font-size: 13px; color: var(--muted); }
+#tss-eq :target { scroll-margin-top: 88px; }
+#tss-eq .eq:target { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+@media print { .site-header, #tss-eq nav.toc, .button-row { display: none; } #tss-eq .eq { break-inside: avoid; } }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="index.html">Andrew Robinson, PhD</a>
+      <div class="nav-links">
+        <a href="index.html">&larr; Academic Site</a>
+        <a href="cycling.html">Cycling</a>
+        <a href="track-simulator.html">Track Simulator</a>
+        <a class="nav-cta" href="#vars">Equations</a>
+      </div>
+    </nav>
+  </header>
+
+<main class="container" id="tss-eq">
+  <section class="hero-card">
+    <p class="eyebrow">Methods · Track Standing-Start Simulator</p>
+    <h1>Equations, Variables &amp; References</h1>
+    <p class="lead">This page documents every equation the track standing-start simulator uses, which input variable feeds each one, and where it comes from. Equations taken from the literature cite their source. Where the tool makes its own modelling choice, the equation is tagged <span class="tag model">Model assumption</span> so you can see exactly what is established physics and what is a simplification.</p>
+    <div class="button-row">
+      <a class="btn btn-primary" href="track-simulator.html">Open the Simulator</a>
+      <a class="btn btn-secondary" href="#refs">Jump to References</a>
+      <a class="btn btn-secondary" href="cycling.html">Back to Cycling</a>
+    </div>
+
+<nav class="toc" aria-label="Contents">
+  <b>Contents</b>
+  <ol>
+    <li><a href="#vars">Variable index (inputs → equations)</a></li>
+    <li><a href="#motion">Equation of motion &amp; integration</a></li>
+    <li><a href="#mass">Mass &amp; wheel inertia</a></li>
+    <li><a href="#gear">Gearing, rollout &amp; cadence</a></li>
+    <li><a href="#fv">Torque–cadence (F–v) envelope</a></li>
+    <li><a href="#stand">Standing → seated transition</a></li>
+    <li><a href="#prop">Propulsive force &amp; drivetrain</a></li>
+    <li><a href="#aero">Aerodynamic drag</a></li>
+    <li><a href="#rr">Rolling resistance &amp; bearings</a></li>
+    <li><a href="#air">Air density</a></li>
+    <li><a href="#track">Velodrome geometry &amp; bends</a></li>
+    <li><a href="#pacing">Pacing curves &amp; the level solver</a></li>
+    <li><a href="#phys">Physiology: CP, W′ &amp; W′ balance</a></li>
+    <li><a href="#energy">Energy budget &amp; outputs</a></li>
+    <li><a href="#opt">Optimal power distribution</a></li>
+    <li><a href="#refs">References</a></li>
+  </ol>
+</nav>
+  </section>
+
+<div class="doc-card">
+
+<!-- ============================================================ -->
+<h2 id="vars">1. Variable index</h2>
+<p>Every input on the simulator, the symbol used below, and the equations it enters. Click an equation number to jump to it.</p>
+<div class="tw"><table>
+<thead><tr><th>Input (as labelled in the tool)</th><th>Symbol</th><th>Units</th><th>Used in</th><th>Source</th></tr></thead>
+<tbody>
+<tr class="grp"><td colspan="5">Event &amp; pacing (per event)</td></tr>
+<tr><td>Distance / duration</td><td class="sym"><var>X</var>, <var>T</var><sub>dur</sub></td><td>m, s</td><td class="eqs"><a href="#e2">2</a>, <a href="#e26">26</a>, <a href="#e33">33</a></td><td>Event definition</td></tr>
+<tr><td>Power-curve model</td><td class="sym">—</td><td>—</td><td class="eqs"><a href="#e27">27</a>–<a href="#e33">33</a></td><td>See §12</td></tr>
+<tr><td>Peak power off the line</td><td class="sym"><var>P</var><sub>pk</sub></td><td>W</td><td class="eqs"><a href="#e7">7</a>–<a href="#e10">10</a>, <a href="#e14">14</a>, <a href="#e30">30</a>, <a href="#e36">36</a></td><td>[4], [5], [6]</td></tr>
+<tr><td>Cadence at peak power</td><td class="sym"><var>c</var><sub>p</sub></td><td>rpm</td><td class="eqs"><a href="#e6">6</a>–<a href="#e10">10</a>, <a href="#e14">14</a></td><td>[4], [5], [6]</td></tr>
+<tr><td>Target average power</td><td class="sym"><span style="text-decoration:overline"><var>P</var></span></td><td>W</td><td class="eqs"><a href="#e33">33</a></td><td>Definition of mean power</td></tr>
+<tr><td>Fade time constant τ</td><td class="sym"><var>τ</var></td><td>s</td><td class="eqs"><a href="#e27">27</a></td><td>Model assumption</td></tr>
+<tr><td>Settle time / plateau drift</td><td class="sym"><var>t</var><sub>s</sub>, <var>δ</var></td><td>s, %</td><td class="eqs"><a href="#e26">26</a>, <a href="#e29">29</a></td><td>Model assumption</td></tr>
+<tr><td>Ramp start % / time to peak</td><td class="sym"><var>p</var><sub>0</sub>, <var>t</var><sub>r</sub></td><td>%, s</td><td class="eqs"><a href="#e30">30</a></td><td>Model assumption</td></tr>
+<tr><td>Custom 1-s power data</td><td class="sym"><var>P</var><sub>data</sub>(<var>t</var>)</td><td>W</td><td class="eqs"><a href="#e32">32</a></td><td>Your file</td></tr>
+<tr><td>Chainring, sprocket</td><td class="sym"><var>N</var><sub>c</sub>, <var>N</var><sub>s</sub></td><td>teeth</td><td class="eqs"><a href="#e4">4</a></td><td>Gear definitions</td></tr>
+<tr><td>Out of the saddle for (s / m / revs)</td><td class="sym"><var>t</var><sub>sit</sub></td><td>s</td><td class="eqs"><a href="#e11">11</a>–<a href="#e13">13</a></td><td>Model assumption</td></tr>
+<tr><td>Start line (finish / pursuit)</td><td class="sym"><var>s</var><sub>0</sub></td><td>m</td><td class="eqs"><a href="#e24">24</a>, <a href="#e25">25</a></td><td>UCI track layout convention</td></tr>
+<tr class="grp"><td colspan="5">Position &amp; aerodynamics</td></tr>
+<tr><td>CdA standing</td><td class="sym"><var>C</var><sub>D</sub><var>A</var><sub>st</sub></td><td>m²</td><td class="eqs"><a href="#e12">12</a>, <a href="#e16">16</a></td><td>[1], [2]</td></tr>
+<tr><td>CdA seated</td><td class="sym"><var>C</var><sub>D</sub><var>A</var><sub>se</sub></td><td>m²</td><td class="eqs"><a href="#e12">12</a>, <a href="#e16">16</a></td><td>[1], [2]</td></tr>
+<tr><td>Sit-down transition</td><td class="sym"><var>t</var><sub>tr</sub></td><td>s</td><td class="eqs"><a href="#e11">11</a></td><td>Model assumption</td></tr>
+<tr><td>Seated max-power capacity</td><td class="sym"><var>φ</var><sub>se</sub></td><td>%</td><td class="eqs"><a href="#e13">13</a></td><td>Model assumption</td></tr>
+<tr class="grp"><td colspan="5">Mass, tyres &amp; drivetrain</td></tr>
+<tr><td>Rider mass, bike mass</td><td class="sym"><var>m</var></td><td>kg</td><td class="eqs"><a href="#e3">3</a>, <a href="#e19">19</a></td><td>[1]</td></tr>
+<tr><td>Wheel moment of inertia</td><td class="sym"><var>I</var></td><td>kg·m²</td><td class="eqs"><a href="#e3">3</a></td><td>[1], [2]</td></tr>
+<tr><td>Rolling circumference</td><td class="sym"><var>C</var><sub>t</sub></td><td>mm</td><td class="eqs"><a href="#e3">3</a>, <a href="#e4">4</a>, <a href="#e5">5</a></td><td>Geometry</td></tr>
+<tr><td>Rolling resistance</td><td class="sym"><var>C</var><sub>rr</sub></td><td>—</td><td class="eqs"><a href="#e19">19</a></td><td>[1], [11]</td></tr>
+<tr><td>Drivetrain efficiency</td><td class="sym"><var>η</var></td><td>%</td><td class="eqs"><a href="#e14">14</a>, <a href="#e15">15</a>, <a href="#e37">37</a></td><td>[1], [16]</td></tr>
+<tr class="grp"><td colspan="5">Air</td></tr>
+<tr><td>Air temperature</td><td class="sym"><var>T</var><sub>C</sub></td><td>°C</td><td class="eqs"><a href="#e22">22</a>, <a href="#e22b">22b</a></td><td>[13], [14]</td></tr>
+<tr><td>Station pressure</td><td class="sym"><var>p</var></td><td>hPa</td><td class="eqs"><a href="#e22">22</a></td><td>[14]</td></tr>
+<tr><td>Elevation (pressure helper)</td><td class="sym"><var>z</var></td><td>m</td><td class="eqs"><a href="#e23">23</a></td><td>[15]</td></tr>
+<tr><td>Relative humidity</td><td class="sym"><var>RH</var></td><td>%</td><td class="eqs"><a href="#e22">22</a>, <a href="#e22b">22b</a></td><td>[13], [14]</td></tr>
+<tr><td>Air density (direct)</td><td class="sym"><var>ρ</var></td><td>kg/m³</td><td class="eqs"><a href="#e16">16</a></td><td>—</td></tr>
+<tr class="grp"><td colspan="5">Velodrome</td></tr>
+<tr><td>Model bend effects</td><td class="sym">—</td><td>on/off</td><td class="eqs"><a href="#e17">17</a>, <a href="#e18">18</a>, <a href="#e20">20</a></td><td>[11]</td></tr>
+<tr><td>Lap length</td><td class="sym"><var>L</var></td><td>m</td><td class="eqs"><a href="#e24">24</a></td><td>Geometry</td></tr>
+<tr><td>Bend radius (black line)</td><td class="sym"><var>R</var></td><td>m</td><td class="eqs"><a href="#e24">24</a>, <a href="#e25">25</a></td><td>Geometry</td></tr>
+<tr><td>Transition (spiral) length</td><td class="sym"><var>L</var><sub>t</sub></td><td>m</td><td class="eqs"><a href="#e24">24</a>, <a href="#e25">25</a></td><td>Model assumption</td></tr>
+<tr><td>Centre-of-mass height</td><td class="sym"><var>h</var></td><td>m</td><td class="eqs"><a href="#e18">18</a></td><td>[11]</td></tr>
+<tr class="grp"><td colspan="5">Physiology (optional)</td></tr>
+<tr><td>Critical power</td><td class="sym"><var>CP</var></td><td>W</td><td class="eqs"><a href="#e35">35</a>, <a href="#e36">36</a></td><td>[7], [8], [9]</td></tr>
+<tr><td>W′</td><td class="sym"><var>W</var>′<sub>0</sub></td><td>kJ</td><td class="eqs"><a href="#e35">35</a>, <a href="#e36">36</a></td><td>[7], [8], [9]</td></tr>
+<tr class="grp"><td colspan="5">Optimiser</td></tr>
+<tr><td>Constraint, floor, optimise sit-down</td><td class="sym"><var>t</var><sub>a</sub>, <var>τ</var>, <var>P</var><sub>floor</sub></td><td>s, s, W</td><td class="eqs"><a href="#e41">41</a>, <a href="#e42">42</a></td><td>[10], [12], [17]</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="motion">2. Equation of motion &amp; numerical integration</h2>
+<p>The bike's speed along the black line, <var>v</var>, and distance, <var>x</var>, follow Newton's second law written as a force balance on the wheel path. This is the same structure as the validated road-cycling power model of Martin et al. [1], applied to sprint efforts by forward integration in [2].</p>
+<div class="eq" id="e1"><div class="m"><var>m</var><sub>eff</sub> <span class="frac"><span>d<var>v</var></span><span>d<var>t</var></span></span> = <var>F</var><sub>prop</sub> − <var>F</var><sub>aero</sub> − <var>F</var><sub>rr</sub> − <var>F</var><sub>bear</sub>, &nbsp;&nbsp; <span class="frac"><span>d<var>x</var></span><span>d<var>t</var></span></span> = <var>v</var></div><div class="n">(1)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span><span class="tag">Martin et al. 2006 [2]</span> Each force is defined in equations 14–21. If the net force is negative at <var>v</var> = 0, acceleration is held at 0 (the rider can't roll backwards out of the gate).</p>
+
+<p>The ODEs are integrated with Heun's method (explicit trapezoidal / RK2):</p>
+<div class="eq" id="e2"><div class="m"><var>v</var><sub>n+1</sub> = <var>v</var><sub>n</sub> + <span class="frac"><span>Δ<var>t</var></span><span>2</span></span>[<var>a</var>(<var>t</var><sub>n</sub>, <var>x</var><sub>n</sub>, <var>v</var><sub>n</sub>) + <var>a</var>(<var>t</var><sub>n+1</sub>, <var>x̃</var>, <var>ṽ</var>)], &nbsp; <var>ṽ</var> = <var>v</var><sub>n</sub> + Δ<var>t</var>·<var>a</var><sub>n</sub>, &nbsp; <var>x̃</var> = <var>x</var><sub>n</sub> + Δ<var>t</var>·<var>v</var><sub>n</sub></div><div class="n">(2)</div></div>
+<p class="src"><span class="tag">Numerical analysis [18]</span> Δ<var>t</var> = 0.01 s for the first 30 s, then 0.05 s (distance events) or 0.1 s (Hour). The finish time is found by linear interpolation of the step that crosses <var>X</var>. Halving or quintupling Δ<var>t</var> changes results by &lt; 0.001 s.</p>
+
+<!-- ============================================================ -->
+<h2 id="mass">3. Mass &amp; wheel inertia</h2>
+<p>Accelerating the wheels' rotation costs energy too. Expressing that as an equivalent translational mass:</p>
+<div class="eq" id="e3"><div class="m"><var>m</var><sub>eff</sub> = <var>m</var><sub>rider</sub> + <var>m</var><sub>bike</sub> + <span class="frac"><span><var>I</var></span><span><var>r</var><sub>w</sub><sup>2</sup></span></span>, &nbsp;&nbsp; <var>r</var><sub>w</sub> = <span class="frac"><span><var>C</var><sub>t</sub></span><span>2π</span></span></div><div class="n">(3)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span> The kinetic-energy term in [1] is ½(<var>m</var> + <var>I</var>/<var>r</var>²)<var>v</var>²; equation 3 is its derivative form. <var>I</var> is the combined moment of inertia of both wheels.</p>
+
+<!-- ============================================================ -->
+<h2 id="gear">4. Gearing, rollout &amp; cadence</h2>
+<p>On a fixed gear the cranks are locked to the wheel, so cadence is a direct function of speed:</p>
+<div class="eq" id="e4"><div class="m"><var>D</var> = <span class="frac"><span><var>N</var><sub>c</sub></span><span><var>N</var><sub>s</sub></span></span> · <var>C</var><sub>t</sub> &nbsp;&nbsp; (rollout, m per crank revolution)</div><div class="n">(4)</div></div>
+<div class="eq" id="e5"><div class="m"><var>c</var> = <span class="frac"><span>60 <var>v</var></span><span><var>D</var></span></span> &nbsp;(rpm), &nbsp;&nbsp; <var>ω</var> = <span class="frac"><span>2π<var>c</var></span><span>60</span></span> &nbsp;(rad/s), &nbsp;&nbsp; gear inches = <span class="frac"><span><var>N</var><sub>c</sub></span><span><var>N</var><sub>s</sub></span></span> · <span class="frac"><span><var>C</var><sub>t</sub></span><span>π · 25.4</span></span></div><div class="n">(5)</div></div>
+<div class="eq" id="e6"><div class="m"><var>r</var> = <span class="frac"><span><var>c</var></span><span><var>c</var><sub>p</sub></span></span> = <span class="frac"><span>60 <var>v</var></span><span><var>D</var> <var>c</var><sub>p</sub></span></span>, &nbsp;&nbsp; <var>v</var><sub>pk</sub> = <span class="frac"><span><var>c</var><sub>p</sub> <var>D</var></span><span>60</span></span></div><div class="n">(6)</div></div>
+<p class="src"><span class="tag">Kinematics</span> <var>r</var> is cadence relative to your peak-power cadence. <var>v</var><sub>pk</sub> is the speed at which you reach peak power, which is how the tool reports <em>when</em> and <em>where</em> in the race the peak happens: the first time <var>r</var> ≥ 1.</p>
+
+<!-- ============================================================ -->
+<h2 id="fv">5. Torque–cadence (force–velocity) envelope</h2>
+<p>Maximal crank torque falls approximately linearly with pedalling rate, so maximal power is a parabola in cadence. This is well established for sprint cycling [4], [5], [6]:</p>
+<div class="eq" id="e7"><div class="m"><var>T</var><sub>max</sub>(<var>c</var>) = <var>T</var><sub>0</sub> (1 − <span class="frac"><span><var>c</var></span><span><var>c</var><sub>0</sub></span></span>), &nbsp;&nbsp; <var>c</var><sub>0</sub> = 2<var>c</var><sub>p</sub></div><div class="n">(7)</div></div>
+<div class="eq" id="e8"><div class="m"><var>P</var><sub>max</sub>(<var>c</var>) = <var>T</var><sub>max</sub> <var>ω</var> = <var>P</var><sub>pk</sub> · <var>r</var> (2 − <var>r</var>)</div><div class="n">(8)</div></div>
+<div class="eq" id="e9"><div class="m"><var>T</var><sub>0</sub> = <span class="frac"><span>2 <var>P</var><sub>pk</sub></span><span><var>ω</var><sub>p</sub></span></span>, &nbsp;&nbsp; <var>ω</var><sub>p</sub> = <span class="frac"><span>2π<var>c</var><sub>p</sub></span><span>60</span></span></div><div class="n">(9)</div></div>
+<p class="src"><span class="tag">Sargeant et al. 1981 [4]</span><span class="tag">Martin et al. 1997 [5]</span><span class="tag">Dorel et al. 2005 [6]</span> Power is zero at 0 rpm, peaks at <var>c</var><sub>p</sub> (where <var>r</var> = 1), and falls beyond it. This is why the standing start is torque-limited: at low cadence you can't produce high <em>power</em> however hard you push.</p>
+
+<p>The "constant-torque start" curve replaces the rising half of eq. 8:</p>
+<div class="eq" id="e10"><div class="m"><var>P</var><sub>max</sub>(<var>c</var>) = <var>P</var><sub>pk</sub> · <var>r</var> &nbsp;for <var>r</var> ≤ 1; &nbsp;&nbsp; <var>P</var><sub>pk</sub> · <var>r</var>(2 − <var>r</var>) &nbsp;for <var>r</var> &gt; 1; &nbsp;&nbsp; <var>T</var><sub>0</sub> = <var>P</var><sub>pk</sub> / <var>ω</var><sub>p</sub></div><div class="n">(10)</div></div>
+<p class="src"><span class="tag model">Model assumption</span> A softer, lower-torque alternative; not a published relationship.</p>
+
+<!-- ============================================================ -->
+<h2 id="stand">6. Standing → seated transition</h2>
+<p>A blend fraction <var>s</var> moves from 0 (standing) to 1 (seated) over the transition time after you sit down. If the out-of-saddle duration is given in metres or pedal revs, <var>t</var><sub>sit</sub> is the moment <var>x</var> reaches that distance (pedal revs × <var>D</var>).</p>
+<div class="eq" id="e11"><div class="m"><var>s</var>(<var>t</var>) = 0 &nbsp;for <var>t</var> &lt; <var>t</var><sub>sit</sub>; &nbsp;&nbsp; min(1, <span class="frac"><span><var>t</var> − <var>t</var><sub>sit</sub></span><span><var>t</var><sub>tr</sub></span></span>) &nbsp;otherwise</div><div class="n">(11)</div></div>
+<div class="eq" id="e12"><div class="m"><var>C</var><sub>D</sub><var>A</var>(<var>t</var>) = <var>C</var><sub>D</sub><var>A</var><sub>st</sub> + <var>s</var>(<var>t</var>) · (<var>C</var><sub>D</sub><var>A</var><sub>se</sub> − <var>C</var><sub>D</sub><var>A</var><sub>st</sub>)</div><div class="n">(12)</div></div>
+<div class="eq" id="e13"><div class="m"><var>φ</var>(<var>t</var>) = 1 − <var>s</var>(<var>t</var>) · (1 − <var>φ</var><sub>se</sub>), &nbsp;&nbsp; <var>P</var><sub>env</sub> = <var>φ</var>(<var>t</var>) · <var>P</var><sub>max</sub>(<var>c</var>)</div><div class="n">(13)</div></div>
+<p class="src"><span class="tag model">Model assumption</span> A linear blend is a simplification of the real sit-down. The seated capacity factor <var>φ</var><sub>se</sub> reflects the well-known observation that standing allows higher sprint power at low cadence, but the single constant is this tool's choice. Set it to 100 % to remove the effect.</p>
+
+<!-- ============================================================ -->
+<h2 id="prop">7. Propulsive force &amp; drivetrain efficiency</h2>
+<p>The rider's planned crank power <var>P</var><sub>plan</sub>(<var>t</var>) (§12) is converted to a force at the wheel, and can never exceed the envelope:</p>
+<div class="eq" id="e14"><div class="m"><var>F</var><sub>prop</sub> = min( <span class="frac"><span><var>η</var> <var>P</var><sub>plan</sub></span><span><var>v</var></span></span>, &nbsp;<span class="frac"><span><var>η</var> <var>P</var><sub>env</sub></span><span><var>v</var></span></span> ), &nbsp;&nbsp; <span class="frac"><span><var>P</var><sub>env</sub></span><span><var>v</var></span></span> = <var>φ</var> <var>P</var><sub>pk</sub> <span class="frac"><span>60</span><span><var>D</var> <var>c</var><sub>p</sub></span></span>(2 − <var>r</var>)</div><div class="n">(14)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span> Writing the envelope as <var>P</var><sub>env</sub>/<var>v</var> keeps the force finite at <var>v</var> = 0: it equals the maximal starting torque <var>T</var><sub>0</sub> transmitted through the gear. The start therefore needs no artificial force cap. For the custom-data curve only the zero-speed limit <var>η</var>·2<var>P</var><sub>pk</sub>·60/(<var>D</var><var>c</var><sub>p</sub>) is applied.</p>
+<div class="eq" id="e15"><div class="m"><var>P</var><sub>crank</sub> = <span class="frac"><span><var>F</var><sub>prop</sub> <var>v</var></span><span><var>η</var></span></span>, &nbsp;&nbsp; <var>P</var><sub>loss</sub> = (1 − <var>η</var>) <var>P</var><sub>crank</sub></div><div class="n">(15)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span><span class="tag">Spicer et al. 2001 [16]</span> Chain-drive efficiency measured at about 98 % and higher under high loads [16]. All reported powers are crank powers, the same as a crank-based power meter.</p>
+
+<!-- ============================================================ -->
+<h2 id="aero">8. Aerodynamic drag</h2>
+<p>Drag power uses the speed of the body through the air. On straights that's the wheel speed. In bends the rider leans, so the body travels a tighter, slower line than the wheels (eq. 18).</p>
+<div class="eq" id="e16"><div class="m"><var>P</var><sub>aero</sub> = ½ <var>ρ</var> <var>C</var><sub>D</sub><var>A</var>(<var>t</var>) (<var>k</var><var>v</var>)<sup>3</sup>, &nbsp;&nbsp; <var>F</var><sub>aero</sub> = <span class="frac"><span><var>P</var><sub>aero</sub></span><span><var>v</var></span></span> = ½ <var>ρ</var> <var>C</var><sub>D</sub><var>A</var> <var>k</var><sup>3</sup> <var>v</var><sup>2</sup></div><div class="n">(16)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span><span class="tag">Fitton &amp; Symons 2018 [11]</span> Indoor air is assumed still (no wind term). <var>k</var> = 1 when bend effects are off or on the straights.</p>
+<div class="eq" id="e17"><div class="m">tan <var>θ</var> = <span class="frac"><span><var>v</var><sup>2</sup> <var>κ</var></span><span><var>g</var></span></span> &nbsp;&nbsp;⇒&nbsp;&nbsp; sin <var>θ</var> = <span class="frac"><span><var>q</var></span><span>√(1 + <var>q</var><sup>2</sup>)</span></span>, &nbsp; <var>q</var> = <span class="frac"><span><var>v</var><sup>2</sup> <var>κ</var></span><span><var>g</var></span></span></div><div class="n">(17)</div></div>
+<div class="eq" id="e18"><div class="m"><var>k</var> = <span class="frac"><span><var>R</var><sub>CoM</sub></span><span><var>R</var></span></span> = 1 − <var>h</var> <var>κ</var> sin <var>θ</var></div><div class="n">(18)</div></div>
+<p class="src"><span class="tag">Fitton &amp; Symons 2018 [11]</span> Lean angle <var>θ</var> balances gravity against the centripetal acceleration <var>v</var>²<var>κ</var> (curvature <var>κ</var> = 1/radius). The centre of mass at height <var>h</var> sits <var>h</var>·sin<var>θ</var> inside the wheel line. <span class="tag model">Model assumption</span> Using a single CoM height for the drag speed (rather than integrating over the body) is a simplification.</p>
+
+<!-- ============================================================ -->
+<h2 id="rr">9. Rolling resistance &amp; bearing friction</h2>
+<div class="eq" id="e19"><div class="m"><var>F</var><sub>rr</sub> = <var>C</var><sub>rr</sub> · <var>m</var> <var>g</var> · <var>n</var></div><div class="n">(19)</div></div>
+<div class="eq" id="e20"><div class="m"><var>n</var> = <span class="frac"><span><var>N</var></span><span><var>m</var><var>g</var></span></span> = √(1 + <var>q</var><sup>2</sup>) = √(1 + (<var>v</var><sup>2</sup><var>κ</var> / <var>g</var>)<sup>2</sup>)</div><div class="n">(20)</div></div>
+<p class="src"><span class="tag">Martin et al. 1998 [1]</span><span class="tag">Fitton &amp; Symons 2018 [11]</span> Rolling resistance is proportional to tyre load. In a bend the load is the resultant of gravity and the centripetal force, so <var>n</var> &gt; 1 (about 1.45 at 55 km/h on a 23 m bend). On straights <var>n</var> = 1. Wheel mass is not counted separately because <var>m</var> includes the bike.</p>
+<div class="eq" id="e21"><div class="m"><var>F</var><sub>bear</sub> = (91 + 8.7 <var>v</var>) × 10<sup>−3</sup> &nbsp;N</div><div class="n">(21)</div></div>
+<p class="src"><span class="tag">Dahn et al. 1991 [3]</span>, as used in <span class="tag">Martin et al. 1998 [1]</span> Wheel-bearing friction; only a few watts at race speed.</p>
+
+<!-- ============================================================ -->
+<h2 id="air">10. Air density</h2>
+<p>From temperature, station pressure and humidity, treating air as an ideal mixture of dry air and water vapour:</p>
+<div class="eq" id="e22"><div class="m"><var>ρ</var> = <span class="frac"><span><var>p</var> − <var>p</var><sub>v</sub></span><span><var>R</var><sub>d</sub> <var>T</var><sub>K</sub></span></span> + <span class="frac"><span><var>p</var><sub>v</sub></span><span><var>R</var><sub>v</sub> <var>T</var><sub>K</sub></span></span>, &nbsp; <var>p</var><sub>v</sub> = <span class="frac"><span><var>RH</var></span><span>100</span></span> <var>e</var><sub>s</sub>, &nbsp; <var>R</var><sub>d</sub> = 287.058, &nbsp;<var>R</var><sub>v</sub> = 461.495 J/(kg·K), &nbsp;<var>T</var><sub>K</sub> = <var>T</var><sub>C</sub> + 273.15</div><div class="n">(22)</div></div>
+<p class="src"><span class="tag">Ideal-gas mixture; cf. Picard et al. 2008 (CIPM-2007) [14]</span> The rigorous CIPM formula adds compressibility and enhancement factors. These change <var>ρ</var> by well under 0.1 % at velodrome conditions.</p>
+<p>The saturation vapour pressure <var>e</var><sub>s</sub> (hPa) uses the Buck equation:</p>
+<div class="eq" id="e22b"><div class="m"><var>e</var><sub>s</sub> = 6.1121 · exp[ (18.678 − <span class="frac"><span><var>T</var><sub>C</sub></span><span>234.5</span></span>) · <span class="frac"><span><var>T</var><sub>C</sub></span><span>257.14 + <var>T</var><sub>C</sub></span></span> ]</div><div class="n">(22b)</div></div>
+<p class="src"><span class="tag">Buck 1981 [13]</span> These are the revised coefficients Buck later published for water above 0 °C.</p>
+<p>The optional elevation helper estimates station pressure with the standard atmosphere:</p>
+<div class="eq" id="e23"><div class="m"><var>p</var> = 1013.25 · (1 − 2.25577 × 10<sup>−5</sup> <var>z</var>)<sup>5.25588</sup> &nbsp;hPa</div><div class="n">(23)</div></div>
+<p class="src"><span class="tag">ICAO / ISO 2533 Standard Atmosphere [15]</span> This ignores the day's weather; enter the real barometer reading when you have it.</p>
+
+<!-- ============================================================ -->
+<h2 id="track">11. Velodrome geometry</h2>
+<p>A lap is modelled as straight → bend → straight → bend. Each bend is a constant-radius arc on the black line with a transition spiral at each end, where curvature rises smoothly from 0 to 1/<var>R</var>. Each bend turns the bike through π radians:</p>
+<div class="eq" id="e24"><div class="m"><var>L</var><sub>arc</sub> = π<var>R</var> − <var>L</var><sub>t</sub>, &nbsp;&nbsp; <var>B</var> = π<var>R</var> + <var>L</var><sub>t</sub> &nbsp;(bend length), &nbsp;&nbsp; <var>S</var> = <span class="frac"><span><var>L</var></span><span>2</span></span> − <var>B</var> &nbsp;(straight length)</div><div class="n">(24)</div></div>
+<div class="eq" id="e25"><div class="m"><var>κ</var>(<var>u</var>) = <span class="frac"><span>1</span><span>2<var>R</var></span></span>(1 − cos <span class="frac"><span>π<var>u</var></span><span><var>L</var><sub>t</sub></span></span>) &nbsp;in a transition; &nbsp;&nbsp; <span class="frac"><span>1</span><span><var>R</var></span></span> &nbsp;on the arc; &nbsp;&nbsp; 0 &nbsp;on straights</div><div class="n">(25)</div></div>
+<p class="src"><span class="tag model">Model assumption</span> Real tracks use clothoid-type transitions whose exact shape varies by builder. The cosine ramp is a smooth stand-in that turns through exactly π per bend (checked numerically). Start positions: the finish line is placed 6 m before the end of the home straight (UCI tracks put it near the end of a straight), and the pursuit line is at mid-straight, <var>s</var><sub>0</sub> = <var>S</var>/2.</p>
+
+<!-- ============================================================ -->
+<h2 id="pacing">12. Pacing curves &amp; the level solver</h2>
+<p>Every curve except the custom file starts with an <b>all-out phase</b> where <var>P</var><sub>plan</sub> = ∞, so the rider is limited only by the envelope (eq. 14). For the cadence-triggered curves this phase ends at the first moment <var>r</var> ≥ 1 (or at 60 s), giving time <var>t</var><sub>a</sub>, power <var>P</var><sub>a</sub> and progress <var>π</var><sub>a</sub>. Progress is <var>π</var> = <var>x</var>/<var>X</var> for distance events and <var>t</var>/<var>T</var><sub>dur</sub> for the Hour. <var>L</var> is the single free level each curve solves for.</p>
+<div class="eq" id="e26"><div class="m"><var>L</var>(<var>π</var>) = <var>L</var> · [1 + <var>δ</var>(<var>π</var> − ½)] &nbsp;&nbsp; (plateau with drift; <var>δ</var> = 0 except the settle curve)</div><div class="n">(26)</div></div>
+<div class="eq" id="e27"><div class="m">Exponential fade: &nbsp; <var>P</var><sub>plan</sub> = <var>L</var>(<var>π</var>) + [<var>P</var><sub>a</sub> − <var>L</var>(<var>π</var><sub>a</sub>)] · <var>e</var><sup>−(<var>t</var> − <var>t</var><sub>a</sub>)/<var>τ</var></sup></div><div class="n">(27)</div></div>
+<div class="eq" id="e28"><div class="m">Linear fade: &nbsp; <var>P</var><sub>plan</sub> = <var>P</var><sub>a</sub> + (<var>L</var> − <var>P</var><sub>a</sub>) · <span class="frac"><span><var>π</var> − <var>π</var><sub>a</sub></span><span>1 − <var>π</var><sub>a</sub></span></span></div><div class="n">(28)</div></div>
+<div class="eq" id="e29"><div class="m">Settle: &nbsp; <var>P</var><sub>plan</sub> = <var>L</var>(<var>π</var>) + [<var>P</var><sub>a</sub> − <var>L</var>(<var>π</var><sub>a</sub>)] · ½[1 + cos(π · min(1, (<var>t</var> − <var>t</var><sub>a</sub>)/<var>t</var><sub>s</sub>))]</div><div class="n">(29)</div></div>
+<div class="eq" id="e30"><div class="m">Time ramp (0 ≤ <var>t</var> ≤ <var>t</var><sub>r</sub>): &nbsp; <var>P</var><sub>plan</sub> = <var>P</var><sub>pk</sub> [<var>p</var><sub>0</sub> + (1 − <var>p</var><sub>0</sub>) <var>t</var>/<var>t</var><sub>r</sub>], &nbsp; then eq. 27 with <var>t</var><sub>a</sub> = <var>t</var><sub>r</sub></div><div class="n">(30)</div></div>
+<div class="eq" id="e31"><div class="m">Even power: &nbsp; <var>P</var><sub>plan</sub> = <var>L</var> from <var>t</var> = 0 (still capped by eq. 14)</div><div class="n">(31)</div></div>
+<div class="eq" id="e32"><div class="m">Custom file: &nbsp; <var>P</var><sub>plan</sub>(<var>t</var>) = <var>L</var> · <var>P</var><sub>data</sub>(<var>t</var>) &nbsp;(linear interpolation between 1-s samples; <var>L</var> = 1 unless scaling)</div><div class="n">(32)</div></div>
+<p class="src"><span class="tag model">Model assumption</span> These are phenomenological pacing shapes, not physiological laws. All of them are bounded by the published torque–cadence envelope (§5), so the physics of the start is the same whichever shape you pick.</p>
+<p>The level <var>L</var> is solved so the effort's mean crank power equals your target:</p>
+<div class="eq" id="e33"><div class="m"><span style="text-decoration:overline"><var>P</var></span> = <span class="frac"><span>1</span><span><var>T</var><sub>finish</sub></span></span> ∫<sub>0</sub><sup><var>T</var><sub>finish</sub></sup> <var>P</var><sub>crank</sub>(<var>t</var>) d<var>t</var> &nbsp;&nbsp; solved for <var>L</var> by Illinois false position</div><div class="n">(33)</div></div>
+<p class="src"><span class="tag">Dowell &amp; Jarratt 1971 [17]</span> Tolerance 0.02 W. This is the time-weighted average a power meter reports, start included.</p>
+
+<!-- ============================================================ -->
+<h2 id="phys">13. Physiology: critical power, W′ and W′ balance</h2>
+<p>Critical power (<var>CP</var>) and the finite work capacity above it (<var>W</var>′) come from the classic two-parameter model:</p>
+<div class="eq" id="e34"><div class="m"><var>P</var> = <var>CP</var> + <span class="frac"><span><var>W</var>′</span><span><var>t</var><sub>lim</sub></span></span></div><div class="n">(34)</div></div>
+<p class="src"><span class="tag">Monod &amp; Scherrer 1965 [9]</span> Shown for context. The simulator uses <var>CP</var> and <var>W</var>′ through equations 35 and 36.</p>
+<p>W′ balance is tracked with the differential model of Skiba et al.:</p>
+<div class="eq" id="e35"><div class="m"><span class="frac"><span>d<var>W</var>′<sub>bal</sub></span><span>d<var>t</var></span></span> = −(<var>P</var> − <var>CP</var>) &nbsp;if <var>P</var> &gt; <var>CP</var>; &nbsp;&nbsp; (<var>CP</var> − <var>P</var>) · <span class="frac"><span><var>W</var>′<sub>0</sub> − <var>W</var>′<sub>bal</sub></span><span><var>W</var>′<sub>0</sub></span></span> &nbsp;otherwise</div><div class="n">(35)</div></div>
+<p class="src"><span class="tag">Skiba et al. 2015 [8]</span> If <var>W</var>′<sub>bal</sub> goes below zero on a non-W′ curve, the tool warns that the plan probably isn't sustainable.</p>
+<p>For the W′ curves and the CP/W′ optimiser, available power also declines as W′ is spent, following Morton's three-parameter model. It is combined with the torque–cadence shape:</p>
+<div class="eq" id="e36"><div class="m"><var>P</var><sub>env</sub> = <var>φ</var> · <var>r</var>(2 − <var>r</var>) · [ <var>CP</var> + (<var>P</var><sub>pk</sub> − <var>CP</var>) <span class="frac"><span><var>W</var>′<sub>bal</sub></span><span><var>W</var>′<sub>0</sub></span></span> ]</div><div class="n">(36)</div></div>
+<p class="src"><span class="tag">Morton 1996 [7]</span> In [7] maximal power falls linearly from <var>P</var><sub>max</sub> toward <var>CP</var> as W′ is used. <span class="tag model">Model assumption</span> Multiplying that ceiling by the cadence shape <var>r</var>(2 − <var>r</var>) combines [7] with [4]–[6]. For the "W′-paced" curve the cap applies during the all-out start only, and <var>L</var> is solved so that min <var>W</var>′<sub>bal</sub> = 0 exactly at the finish.</p>
+
+<!-- ============================================================ -->
+<h2 id="energy">14. Energy budget &amp; reported outputs</h2>
+<div class="eq" id="e37"><div class="m"><var>η</var> ∫<var>P</var><sub>crank</sub> d<var>t</var> = ∫<var>F</var><sub>aero</sub><var>v</var> d<var>t</var> + ∫<var>F</var><sub>rr</sub><var>v</var> d<var>t</var> + ∫<var>F</var><sub>bear</sub><var>v</var> d<var>t</var> + ½ <var>m</var><sub>eff</sub> <var>v</var><sub>end</sub><sup>2</sup></div><div class="n">(37)</div></div>
+<p class="src"><span class="tag">Work–energy theorem</span><span class="tag">Martin et al. 1998 [1]</span> The tool shows this balance and the residual (typically 0.0 J) as a check on the integrator. Kinetic energy at the finish is energy you carried over the line.</p>
+<div class="eq" id="e38"><div class="m">Peak-power time: &nbsp; <var>t</var><sub>pk</sub> = min{ <var>t</var> : <var>r</var>(<var>t</var>) ≥ 1 }, &nbsp; distance <var>x</var>(<var>t</var><sub>pk</sub>), &nbsp; pedal revolutions <var>x</var>(<var>t</var><sub>pk</sub>)/<var>D</var></div><div class="n">(38)</div></div>
+<div class="eq" id="e39"><div class="m">Split power: &nbsp; <span style="text-decoration:overline"><var>P</var></span><sub><var>i</var></sub> = <span class="frac"><span><var>E</var>(<var>t</var><sub><var>i</var></sub>) − <var>E</var>(<var>t</var><sub><var>i</var>−1</sub>)</span><span><var>t</var><sub><var>i</var></sub> − <var>t</var><sub><var>i</var>−1</sub></span></span>, &nbsp; <var>E</var>(<var>t</var>) = ∫<sub>0</sub><sup><var>t</var></sup> <var>P</var><sub>crank</sub> d<var>t</var></div><div class="n">(39)</div></div>
+<div class="eq" id="e40"><div class="m"><span class="frac"><span>W</span><span><var>C</var><sub>D</sub><var>A</var></span></span> = <span class="frac"><span><span style="text-decoration:overline"><var>P</var></span></span><span><var>C</var><sub>D</sub><var>A</var><sub>se</sub></span></span>, &nbsp;&nbsp; sensitivity: &nbsp;Δ<var>T</var> = <var>T</var>(<var>θ</var> + Δ<var>θ</var>) − <var>T</var>(<var>θ</var>) &nbsp;with <var>L</var> re-solved</div><div class="n">(40)</div></div>
+<p class="src"><span class="tag model">Tool outputs</span> The "What is it worth?" table perturbs one input <var>θ</var> at a time and re-runs the full simulation, so the deltas include every interaction (for example, a lower CdA also changes when you reach peak cadence).</p>
+
+<!-- ============================================================ -->
+<h2 id="opt">15. Optimal power distribution</h2>
+<p>The optimiser searches a family of plans: all-out (envelope-limited) until <var>t</var><sub>a</sub>, then the exponential settle of eq. 27 with <var>δ</var> = 0, optionally with the sit-down time <var>t</var><sub>sit</sub> as a free variable too.</p>
+<div class="eq" id="e41"><div class="m">Average-power constraint: &nbsp; min<sub><var>t</var><sub>a</sub>, <var>τ</var> [, <var>t</var><sub>sit</sub>]</sub> <var>T</var><sub>finish</sub> &nbsp; s.t. eq. 33 holds, &nbsp; <var>P</var><sub>plan</sub> ≥ <var>P</var><sub>floor</sub> = <var>f</var> · <span style="text-decoration:overline"><var>P</var></span></div><div class="n">(41)</div></div>
+<div class="eq" id="e42"><div class="m">CP / W′ constraint: &nbsp; min<sub><var>t</var><sub>a</sub>, <var>τ</var>, <var>L</var> [, <var>t</var><sub>sit</sub>]</sub> <var>T</var><sub>finish</sub> &nbsp; s.t. <var>P</var> ≤ <var>P</var><sub>env</sub> of eq. 36 throughout</div><div class="n">(42)</div></div>
+<p class="src"><span class="tag">Nelder &amp; Mead 1965 [10]</span><span class="tag">de Koning et al. 1999 [12]</span> Bounds are enforced with a logistic transform, and two starting points are tried. For the Hour the objective is to maximise distance instead. The result matches the theory in [12]: accelerate as hard as possible, then ride evenly, with all-out being optimal in short events. <span class="tag model">Model assumption</span> The floor <var>f</var> (default 50 %) is a practical guard against an unrideable "sprint then coast" answer. Holding the plateau even (<var>δ</var> = 0) deliberately ignores the small gain from bleeding off speed before the line.</p>
+
+<div class="note"><b>What the model leaves out:</b> cadence-dependent efficiency at sub-maximal power, tyre scrub and steering losses, changes in body kinetic energy as you lean in and out of bends, track-surface temperature effects on <var>C</var><sub>rr</sub>, drafting, and reaction time at the gate. If your CdA or Crr came from on-track testing using wheel speed, the bend effects (eqs. 17–20) are already baked in. Switch them off to avoid counting them twice.</div>
+
+<!-- ============================================================ -->
+<h2 id="refs">16. References</h2>
+<ol class="refs">
+  <li id="r1">Martin, J. C., Milliken, D. L., Cobb, J. E., McFadden, K. L., &amp; Coggan, A. R. (1998). Validation of a mathematical model for road cycling power. <i>Journal of Applied Biomechanics</i>, 14(3), 276–291.</li>
+  <li id="r2">Martin, J. C., Gardner, A. S., Barras, M., &amp; Martin, D. T. (2006). Modeling sprint cycling using field-derived parameters and forward integration. <i>Medicine &amp; Science in Sports &amp; Exercise</i>, 38(3), 592–597.</li>
+  <li id="r3">Dahn, K., Mai, L., Poland, J., &amp; Jenkins, C. (1991). Frictional resistance in bicycle wheel bearings. <i>Cycling Science</i>, 3, 28–32.</li>
+  <li id="r4">Sargeant, A. J., Hoinville, E., &amp; Young, A. (1981). Maximum leg force and power output during short-term dynamic exercise. <i>Journal of Applied Physiology</i>, 51(5), 1175–1182.</li>
+  <li id="r5">Martin, J. C., Wagner, B. M., &amp; Coyle, E. F. (1997). Inertial-load method determines maximal cycling power in a single exercise bout. <i>Medicine &amp; Science in Sports &amp; Exercise</i>, 29(11), 1505–1512.</li>
+  <li id="r6">Dorel, S., Hautier, C. A., Rambaud, O., Rouffet, D., Van Praagh, E., Lacour, J.-R., &amp; Bourdin, M. (2005). Torque and power–velocity relationships in cycling: relevance to track sprint performance in world-class cyclists. <i>International Journal of Sports Medicine</i>, 26(9), 739–746.</li>
+  <li id="r7">Morton, R. H. (1996). A 3-parameter critical power model. <i>Ergonomics</i>, 39(4), 611–619.</li>
+  <li id="r8">Skiba, P. F., Fulford, J., Clarke, D. C., Vanhatalo, A., &amp; Jones, A. M. (2015). Intramuscular determinants of the ability to recover work capacity above critical power. <i>European Journal of Applied Physiology</i>, 115(4), 703–713.</li>
+  <li id="r9">Monod, H., &amp; Scherrer, J. (1965). The work capacity of a synergic muscular group. <i>Ergonomics</i>, 8(3), 329–338.</li>
+  <li id="r10">Nelder, J. A., &amp; Mead, R. (1965). A simplex method for function minimization. <i>The Computer Journal</i>, 7(4), 308–313.</li>
+  <li id="r11">Fitton, B., &amp; Symons, D. (2018). A mathematical model for simulating cycling: applied to track cycling. <i>Sports Engineering</i>, 21(4), 409–418.</li>
+  <li id="r12">de Koning, J. J., Bobbert, M. F., &amp; Foster, C. (1999). Determination of optimal pacing strategy in track cycling with an energy flow model. <i>Journal of Science and Medicine in Sport</i>, 2(3), 266–277.</li>
+  <li id="r13">Buck, A. L. (1981). New equations for computing vapor pressure and enhancement factor. <i>Journal of Applied Meteorology</i>, 20(12), 1527–1532.</li>
+  <li id="r14">Picard, A., Davis, R. S., Gläser, M., &amp; Fujii, K. (2008). Revised formula for the density of moist air (CIPM-2007). <i>Metrologia</i>, 45(2), 149–155.</li>
+  <li id="r15">International Organization for Standardization (1975). <i>ISO 2533:1975 Standard Atmosphere</i>. Geneva: ISO.</li>
+  <li id="r16">Spicer, J. B., Richardson, C. J. K., Ehrlich, M. J., Bernstein, J. R., Fukuda, M., &amp; Terada, M. (2001). Effects of frictional loss on bicycle chain drive efficiency. <i>Journal of Mechanical Design</i>, 123(4), 598–605.</li>
+  <li id="r17">Dowell, M., &amp; Jarratt, P. (1971). A modified regula falsi method for computing the root of an equation. <i>BIT Numerical Mathematics</i>, 11(2), 168–174.</li>
+  <li id="r18">Süli, E., &amp; Mayers, D. F. (2003). <i>An Introduction to Numerical Analysis</i>. Cambridge University Press. (Heun / explicit trapezoidal method.)</li>
+</ol>
+
+<p class="foot">Equation numbers match the order in which the simulator evaluates them. Every symbol here maps one-to-one onto the simulator source code, which is unminified and readable in the page itself.</p>
+</div>
+</main>
+
+  <footer>
+    © Andrew Robinson, PhD | Track simulator methods &middot; <a href="track-simulator.html">Track Simulator</a> &middot; <a href="cycling.html">Cycling</a> &middot; <a href="index.html">Research, Publications &amp; CV</a>
+  </footer>
+</body>
+</html>
