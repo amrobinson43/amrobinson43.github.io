@@ -125,6 +125,16 @@ footer { text-align: center; color: var(--muted); padding: 10px 0 20px; font-siz
 #tss-app .tss-desc { font-size: 12px; color: var(--ink2); margin: 2px 0 6px; }
 #tss-app .tss-inline { display: flex; gap: 8px; align-items: center; }
 #tss-app .tss-inline .tss-in { flex: 1; }
+#tss-app .tss-field.tss-pdrow { grid-template-columns: minmax(0, 1fr) 210px; }
+#tss-app .tss-pd { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#tss-app .tss-readout table { width: 100%; border-collapse: collapse; margin: 6px 0 2px; }
+#tss-app .tss-readout th, #tss-app .tss-readout td { padding: 2px 4px; text-align: right; font-weight: 500; }
+#tss-app .tss-readout th { color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--grid); }
+#tss-app .tss-readout th:first-child, #tss-app .tss-readout td:first-child { text-align: left; }
+#tss-app .tss-readout .tss-rnote { margin-top: 5px; }
+#tss-app .tss-readout .tss-flag { color: #b45309; }
+#tss-app .tss-readout .tss-rbtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+#tss-app .tss-readout .tss-rbtns button { padding: 5px 10px; font-size: 0.8rem; border-radius: 8px; }
 
 /* Result panels */
 #tss-app .tss-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
@@ -743,7 +753,8 @@ const DEFAULTS = {
     cdaSt: 0.32, cdaSe: 0.20, tTr: 1.0, seatF: 95,
     rhoMode: 'calc', tempC: 24, pressure: 1013, rh: 50, elev: 0, rhoDirect: 1.18,
     bends: true, lap: 250, bendR: 23, trans: 10, comH: 0.95,
-    physio: false, CP: 400, Wp: 30
+    physio: false, CP: 400, Wp: 30, cpSrc: 'known',
+    pd1t: 3, pd1p: 565, pd2t: 7, pd2p: 470, pd3t: 12, pd3p: 440, pd4t: 0, pd4p: 0
   },
   events: {
     k1: ev({ curve: 'fv_exp', PF: 1650, cp: 105, Pavg: 1000, tau: 15, CR: 60, cog: 14, upVal: 8, start: 'finish' }),
@@ -758,6 +769,7 @@ const DEFAULTS = {
 /* ===================== Input schema ===================== */
 const F = (k, label, unit, o) => Object.assign({ k, label, unit }, o || {});
 const tauCurves = ['fv_exp', 'torque_exp', 'ramp_exp', 'wb_paced'];
+function pdShow() { return !!state.shared.physio && state.shared.cpSrc === 'pd'; }
 const SECTIONS = [
   { id: 'event', title: 'Event & pacing', open: true, tag: () => EVENTS[state.sel].long, fields: [
     F('e.kind', 'Event type', '', { type: 'select', options: [['dist', 'Fixed distance'], ['time', 'Fixed duration']], show: (e, k) => k === 'cu' }),
@@ -818,8 +830,15 @@ const SECTIONS = [
   ] },
   { id: 'phys', title: 'Physiology (optional)', open: false, tag: () => state.shared.physio ? 'on' : 'off', fields: [
     F('s.physio', 'Use CP / W′ (W′ balance & limits)', '', { type: 'check' }),
-    F('s.CP', 'Critical power (CP)', 'W', { step: 5, min: 50, max: 900, show: () => state.shared.physio }),
-    F('s.Wp', 'W′ (work capacity above CP)', 'kJ', { step: 0.5, min: 1, max: 100, show: () => state.shared.physio }),
+    F('s.cpSrc', 'CP and W′ come from', '', { type: 'select', wide: true, options: [['known', 'Values I enter'], ['pd', 'A fit to my best efforts (power–duration)']], show: () => state.shared.physio }),
+    F('s.CP', 'Critical power (CP)', 'W', { step: 5, min: 50, max: 900, show: () => state.shared.physio && state.shared.cpSrc !== 'pd' }),
+    F('s.Wp', 'W′ (work capacity above CP)', 'kJ', { step: 0.5, min: 1, max: 100, show: () => state.shared.physio && state.shared.cpSrc !== 'pd' }),
+    { type: 'sub', k: 's.pdSub', label: 'Best efforts · duration and average power', show: pdShow },
+    F('s.pd1', 'Effort 1', '', { type: 'pd', i: 1, show: pdShow }),
+    F('s.pd2', 'Effort 2', '', { type: 'pd', i: 2, show: pdShow }),
+    F('s.pd3', 'Effort 3', '', { type: 'pd', i: 3, show: pdShow }),
+    F('s.pd4', 'Effort 4 (optional)', '', { type: 'pd', i: 4, show: pdShow }),
+    { type: 'html', k: 's.pdInfo', id: 'pdInfo', show: pdShow },
     { type: 'html', id: 'physInfo' }
   ] }
 ];
@@ -929,6 +948,52 @@ function currentRho() {
   const S = state.shared;
   return S.rhoMode === 'direct' ? cl(S.rhoDirect, 0.5, 1.5, 1.18) : airDensity(cl(S.tempC, -20, 50, 20), cl(S.pressure, 500, 1100, 1013), cl(S.rh, 0, 100, 50));
 }
+/* ----- CP / W' from best efforts (power–duration) -----
+   Linear work–time model (Monod & Scherrer; Hill 1993): W_i = P_i·t_i = W' + CP·t_i, by least squares.
+   Standard errors are the usual regression SEs (need 3+ efforts).                                     */
+function pdPoints() {
+  const S = state.shared, pts = [];
+  for (let i = 1; i <= 4; i++) {
+    const t = +S['pd' + i + 't'] * 60, P = +S['pd' + i + 'p'];
+    if (t > 0 && P > 0 && isFinite(t) && isFinite(P)) pts.push({ i, t, P });
+  }
+  return pts;
+}
+function fitCP(pts) {
+  const n = pts.length;
+  if (n < 2) return { ok: false, n, why: 'Enter at least two best efforts of different lengths.' };
+  let st = 0, sw = 0;
+  for (const p of pts) { st += p.t; sw += p.P * p.t; }
+  const tm = st / n, wm = sw / n;
+  let sxx = 0, sxy = 0;
+  for (const p of pts) { const dx = p.t - tm; sxx += dx * dx; sxy += dx * (p.P * p.t - wm); }
+  if (!(sxx > 25)) return { ok: false, n, why: 'The efforts need clearly different durations.' };
+  const CP = sxy / sxx, Wp = wm - CP * tm;
+  let sse = 0;
+  for (const p of pts) { const r = p.P * p.t - (Wp + CP * p.t); sse += r * r; }
+  const s = n > 2 ? Math.sqrt(sse / (n - 2)) : null;
+  const seCP = s != null ? s / Math.sqrt(sxx) : null;
+  const seW = s != null ? s * Math.sqrt(1 / n + tm * tm / sxx) : null;
+  let why = '';
+  if (!(CP > 0)) why = 'The fit gives a CP of zero or less. Check the durations and powers.';
+  else if (!(Wp > 0)) why = 'The fit gives a W′ of zero or less: the longer efforts are too strong compared with the shorter ones. Check that each one was a genuine maximal effort.';
+  return { ok: !why, why, n, CP, Wp, seCP, seW, tMin: Math.min(...pts.map((p) => p.t)), tMax: Math.max(...pts.map((p) => p.t)) };
+}
+/* CP and W' actually used by the simulation */
+function physioVals() {
+  const S = state.shared;
+  if (!S.physio) return { CP: 0, Wp: 0, src: 'off' };
+  const known = { CP: cl(S.CP, 50, 1000, 400), Wp: cl(S.Wp, 1, 100, 30) * 1000 };
+  if (S.cpSrc !== 'pd') return Object.assign(known, { src: 'known' });
+  const fit = fitCP(pdPoints());
+  if (!fit.ok) return Object.assign(known, { src: 'fallback', fit });
+  return { CP: cl(fit.CP, 50, 1000, 400), Wp: cl(fit.Wp / 1000, 1, 100, 30) * 1000, src: 'fit', fit };
+}
+/* Best average power for an all-out effort of duration t (Morton 3-parameter model with P_max = peak power) */
+function cpPredict(CP, Wp, Pmax, t) {
+  const k = Pmax > CP ? Wp / (Pmax - CP) : 0;
+  return CP + Wp / (t + k);
+}
 function trackPos(c, x) {
   const tr = c.track;
   const lap = Math.floor(x / (tr ? tr.L : state.shared.lap)) + 1;
@@ -973,6 +1038,7 @@ function buildCfg(key) {
   const track = S.bends ? makeTrack(cl(S.lap, 100, 500, 250), cl(S.bendR, 5, 80, 23), cl(S.trans, 0, 60, 10), 6) : null;
   const unit = E.upUnit;
   const split = def.split || (kind === 'time' ? 1000 : dist <= 1500 ? 125 : dist <= 6000 ? 250 : 1000);
+  const ph = physioVals();
   return {
     key, kind, dist, dur, D, CR, cog, circ, m,
     mEff: m + cl(S.inertia, 0, 1, 0.14) / (rw * rw), rho: currentRho(),
@@ -982,7 +1048,7 @@ function buildCfg(key) {
     PF: cl(E.PF, 50, 5000, 1000), cp: cl(E.cp, 20, 250, 100), h: cl(S.comH, 0, 1.6, 0.95),
     track, trackBad: !!S.bends && !track, startS: track ? (E.start === 'pursuit' ? track.pursuit : track.finish) : 0,
     standMode: unit === 'm' ? 'dist' : unit === 'revs' ? 'revs' : 'time', standVal: cl(E.upVal, 0, 1e5, 5),
-    CP: S.physio ? cl(S.CP, 50, 1000, 400) : 0, Wp: S.physio ? cl(S.Wp, 1, 100, 30) * 1000 : 0,
+    CP: ph.CP, Wp: ph.Wp,
     prof: buildProfile(E), splitStep: split, target: cl(E.Pavg, 10, 5000, 400)
   };
 }
@@ -1411,8 +1477,13 @@ function initCharts() {
 
 /* ===================== Rendering ===================== */
 function fieldHtml(f) {
-  if (f.type === 'html') return '<div class="tss-readout" data-html="' + f.id + '"></div>';
-  if (f.type === 'sub') return '<div class="tss-subhead">' + esc(f.label) + '</div>';
+  const df = f.k ? ' data-f="' + f.k + '"' : '';
+  if (f.type === 'html') return '<div class="tss-readout" data-html="' + f.id + '"' + df + '></div>';
+  if (f.type === 'sub') return '<div class="tss-subhead"' + df + '>' + esc(f.label) + '</div>';
+  if (f.type === 'pd') {
+    const inp = (k, unit, step, max, what) => '<div class="tss-in"><input id="tss-s-' + k + '" data-k="s.' + k + '" data-opt="1" type="number" inputmode="decimal" step="' + step + '" min="0" max="' + max + '" placeholder="—" aria-label="' + esc(f.label + ' ' + what) + '"><span class="u">' + unit + '</span></div>';
+    return '<div class="tss-field tss-pdrow"' + df + '><label for="tss-s-pd' + f.i + 't">' + esc(f.label) + '</label><div class="tss-pd">' + inp('pd' + f.i + 't', 'min', 0.5, 180, 'duration (minutes)') + inp('pd' + f.i + 'p', 'W', 5, 3000, 'average power (W)') + '</div></div>';
+  }
   const id = 'tss-' + f.k.replace('.', '-');
   const hint = f.hint ? '<div class="hint">' + esc(f.hint) + '</div>' : '';
   if (f.type === 'check') return '<div class="tss-field wide" data-f="' + f.k + '"><label class="tss-check"><input type="checkbox" id="' + id + '" data-k="' + f.k + '"> ' + esc(f.label) + '</label>' + hint + '</div>';
@@ -1440,7 +1511,8 @@ function syncInputs() {
     const v = getPath(el.dataset.k);
     if (el.type === 'checkbox') el.checked = !!v;
     else if (document.activeElement !== el) {
-      if (el.type === 'number') { if (v != null && isFinite(v)) el.value = String(+(+v).toPrecision(10)); el.classList.remove('bad'); }
+      if (el.type === 'number' && el.dataset.opt && !(v > 0)) { el.value = ''; el.classList.remove('bad'); }
+      else if (el.type === 'number') { if (v != null && isFinite(v)) el.value = String(+(+v).toPrecision(10)); el.classList.remove('bad'); }
       else if (v != null) el.value = v;
     }
   });
@@ -1469,8 +1541,46 @@ function updateReadouts() {
   set('rhoInfo', 'ρ = <b>' + fmt(c.rho, 4) + ' kg/m³</b>' + (S.rhoMode !== 'direct' ? ' (moist air)' : ''));
   const tr = c.track;
   set('trackInfo', S.bends ? (tr ? 'Straights ' + fmt(tr.S, 1) + ' m · bends ' + fmt(tr.B, 1) + ' m each. Lean at 60 km/h: ' + fmt(Math.atan((60 / 3.6) ** 2 / tr.R / G) * 180 / Math.PI, 0) + '°' : '<b>Bends don’t fit in this lap length.</b> Reduce radius or transition.') : 'Bend effects off: straight-line physics.');
-  set('physInfo', S.physio ? 'W′ balance uses the Skiba differential model. CP/W′ curves also cap available power by W′ (Morton 3-parameter).' : 'Switch on to track W′ balance, flag unsustainable plans and unlock the W′ curves and optimiser.');
+  if (pdShow()) set('pdInfo', pdInfoHtml(c));
+  set('physInfo', S.physio ? (S.cpSrc === 'pd' ? 'Simulating with <b>CP ' + fmt(c.CP) + ' W</b> and <b>W′ ' + fmt(c.Wp / 1000, 1) + ' kJ</b>. ' : '') + 'W′ balance uses the Skiba differential model. CP/W′ curves and the CP / W′ optimiser also cap available power by W′ (Morton 3-parameter).' : 'Switch on to track W′ balance, flag unsustainable plans and unlock the W′ curves and optimiser. If you don’t know your CP and W′, you can fit them to your best efforts.');
   for (const s of SECTIONS) { const t = $('[data-tag="' + s.id + '"]'); if (t) t.textContent = s.tag ? s.tag() : ''; }
+}
+
+function pdInfoHtml(c) {
+  const S = state.shared, e = state.events[state.sel];
+  const pts = pdPoints(), f = fitCP(pts);
+  const guide = 'Use your best average power for 2–4 efforts between about <b>2 and 15 minutes</b> (for example 3, 7 and 12 min), ideally all-out and from the last few weeks. Leave a row blank to skip it.';
+  if (!f.ok) {
+    return '<b class="tss-flag">' + esc(f.why) + '</b> Until then the simulator uses your entered values (CP ' + fmt(c.CP) + ' W, W′ ' + fmt(c.Wp / 1000, 1) + ' kJ).<div class="tss-rnote">' + guide + '</div>';
+  }
+  const pc = (se, v) => se == null ? '' : ' ± ' + fmt(100 * se / v, 1) + ' %';
+  let h = 'Fit of work = W′ + CP·t to ' + f.n + ' efforts:<br><b>CP ' + fmt(f.CP) + ' W</b>' + pc(f.seCP, f.CP) + ' · <b>W′ ' + fmt(f.Wp / 1000, 1) + ' kJ</b>' + pc(f.seW, f.Wp);
+  h += '<table><thead><tr><th>Effort</th><th>Time</th><th>Yours</th><th>Model</th><th>Diff</th></tr></thead><tbody>';
+  for (const p of pts) {
+    const m = f.CP + f.Wp / p.t;
+    h += '<tr><td>' + p.i + '</td><td>' + fmtTime(p.t, 0) + '</td><td>' + fmt(p.P) + ' W</td><td>' + fmt(m) + ' W</td><td>' + fmtSigned(100 * (p.P - m) / m, 1, ' %') + '</td></tr>';
+  }
+  h += '</tbody></table>';
+  const notes = [];
+  if (f.n === 2) notes.push('Two efforts always fit exactly, so there is no error estimate. Add a third to check that they agree.');
+  if (f.seCP != null && (f.seCP / f.CP > 0.05 || f.seW / f.Wp > 0.2)) notes.push('<span class="tss-flag">Loose fit:</span> the efforts don’t agree well. One of them was probably not a true best.');
+  if (f.tMin < 120 || f.tMax > 20 * 60) notes.push('<span class="tss-flag">Outside 2–15 min:</span> very short efforts are limited by peak power and very long ones by fatigue that this model ignores, so they bias CP and W′.');
+  if (c.PF <= f.CP) notes.push('<span class="tss-flag">Peak power off the line is below CP.</span> Raise it in Event &amp; pacing.');
+  h += notes.map((n) => '<div class="tss-rnote">' + n + '</div>').join('');
+  // What this event should average, using the same 3-parameter model the W' curves use
+  const r = results[state.sel];
+  const T = c.kind === 'time' ? c.dur : (r && r.sim && isFinite(r.sim.T) ? r.sim.T : null);
+  if (T && c.PF > f.CP) {
+    const Pp = cpPredict(c.CP, c.Wp, c.PF, T);
+    h += '<div class="tss-rnote">Best <b>even</b> power you could hold for this ' + esc(EVENTS[state.sel].name) + ' (≈ ' + fmtSecs(T, 0) + ', 3-parameter model with your ' + fmt(c.PF) + ' W peak): <b>≈ ' + fmt(Pp) + ' W</b>. A front-loaded, all-out start can average a bit more. The CP / W′ optimiser works out how much.';
+    if (T > 20 * 60) h += ' <span class="tss-flag">Beyond about 20–30 min, real power falls below CP, so this overestimates long events.</span>';
+    h += '</div>';
+    const btns = [];
+    if (usesAvg(e)) btns.push('<button type="button" data-act="pdTarget" data-w="' + (Math.round(Pp / 5) * 5) + '">Use ' + fmt(Math.round(Pp / 5) * 5) + ' W as target average</button>');
+    btns.push('<button type="button" data-act="pdOpt">Optimise with this CP / W′</button>');
+    h += '<div class="tss-rbtns">' + btns.join('') + '<button type="button" data-act="pdCopy" title="Copy the fitted values into the CP and W′ boxes so you can edit them">Copy into CP / W′ boxes</button></div>';
+  }
+  return h + '<div class="tss-rnote">' + guide + '</div>';
 }
 
 function resultValue(r, opt) {
@@ -1769,6 +1879,7 @@ function renderMethods() {
   <p>Each curve has one free level (plateau, finishing power, constant power or data scale). It is solved with an Illinois false-position search so the effort’s <b>mean crank power</b> (start included) equals your target. W′ curves instead solve so that W′ bottoms out at 1 % of its value at the finish.</p>
   <h3>Physiology (optional)</h3>
   <p>W′ balance follows the Skiba differential model: depletion is <code>P − CP</code> above CP, and recovery is <code>(CP − P)·(W′<sub>0</sub> − W′)/W′<sub>0</sub></code> below it. The W′ curves also cap available power at <code>CP + (P<sub>peak</sub> − CP)·W′/W′<sub>0</sub></code> (Morton’s 3-parameter model), still shaped by torque–cadence.</p>
+  <p>If you don’t know CP and W′, enter 2–4 best efforts. The tool fits the linear work–time model <code>P·t = W′ + CP·t</code> by least squares and reports standard errors when there are three or more efforts. Efforts of roughly 2–15 min suit this model best (Hill 1993; Jones et al. 2010). The best even power for an event of duration T follows from the 3-parameter model the simulator uses: <code>P = CP + W′ / (T + W′/(P<sub>peak</sub> − CP))</code>. A front-loaded all-out effort can average more, and the CP / W′ optimiser finds that.</p>
   <h3>Optimal distribution</h3>
   <p>Nelder–Mead searches over all-out duration, settle time constant and, optionally, sit-down time. Under the average-power constraint, the even plateau is re-solved for each candidate. Under CP/W′ the 3-parameter cap is the constraint and the plateau level is searched directly. Under a fixed average power, theory (and the optimiser) says: accelerate as hard as the torque envelope allows until you are near cruising speed, then ride evenly. In short events, that pushes toward a very long all-out phase followed by soft-pedalling. The “never below” floor keeps the answer rideable, and the CP/W′ constraint gives the fatigue-limited version.</p>
   <p>One effect is deliberately left out of the search: speed carried over the line is wasted kinetic energy. Under a strict fixed average, the maths therefore rewards letting power sag through the race and finishing slower (worth roughly half a second in a 4 km, nothing in the Hour). That isn’t a pacing strategy anyone would choose, so the plateau is held even.</p>
@@ -1776,10 +1887,11 @@ function renderMethods() {
   <ul><li>Pedalling-rate effects on submaximal efficiency (so gear choice in long events is driven only by the start and the F–v envelope), tyre scrub and steering losses, body-mass kinetic energy changes as you lean in and out of bends, team drafting, track temperature effects on Crr, and reaction time at the gate.</li>
   <li>Bend effects are already baked into CdA/Crr values derived from velodrome testing with wheel speed. Switch them off in that case to avoid counting them twice.</li></ul>
   <p class="tss-small"><a href="track-simulator-equations.html">Full list of equations, variables and references →</a></p>
-  <p class="tss-small">Background: Martin et al. (1998) validated road-cycling power model; Martin et al. (2006) sprint modelling with forward integration; Morton (1996) 3-parameter CP model; Skiba et al. (2015) W′ balance; Fitton &amp; Symons (2018) track-cycling simulation.</p>`;
+  <p class="tss-small">Background: Martin et al. (1998) validated road-cycling power model; Martin et al. (2006) sprint modelling with forward integration; Morton (1996) 3-parameter CP model; Skiba et al. (2015) W′ balance; Hill (1993) and Jones et al. (2010) CP and W′ from best efforts; Fitton &amp; Symons (2018) track-cycling simulation.</p>`;
 }
 
 function renderAll() {
+  updateReadouts();
   renderCards();
   renderSummary();
   renderCharts();
@@ -1799,6 +1911,7 @@ function onInput(ev) {
   if (el.type === 'checkbox') v = el.checked;
   else if (el.type === 'number') {
     v = parseFloat(el.value);
+    if (!isFinite(v) && el.dataset.opt && el.value.trim() === '' && !(el.validity && el.validity.badInput)) v = 0;   // blank optional box = unused
     if (!isFinite(v)) { el.classList.add('bad'); return; }
     el.classList.remove('bad');
   } else v = el.value;
@@ -1826,6 +1939,15 @@ root.addEventListener('click', (ev) => {
   if (a === 'optimize') { runOptimize(state.sel, gen, true).catch((e) => console.error(e)); renderOpt(); }
   else if (a === 'gears') runGears(state.sel).catch((e) => console.error(e));
   else if (a === 'elev') { state.shared.pressure = Math.round(pressureFromElevation(cl(state.shared.elev, -400, 6000, 0)) * 10) / 10; persist(); syncInputs(); scheduleCompute(0); toast('Pressure set to ' + fmt(state.shared.pressure, 1) + ' hPa'); }
+  else if (a === 'pdTarget') { const w = +act.dataset.w; if (w > 0) { state.events[state.sel].Pavg = w; persist(); syncInputs(); scheduleCompute(0); toast('Target average set to ' + fmt(w) + ' W'); } }
+  else if (a === 'pdCopy') { const f = fitCP(pdPoints()); if (f.ok) { state.shared.CP = Math.round(f.CP); state.shared.Wp = Math.round(f.Wp / 100) / 10; state.shared.cpSrc = 'known'; persist(); syncInputs(); scheduleCompute(0); toast('CP ' + fmt(state.shared.CP) + ' W and W′ ' + fmt(state.shared.Wp, 1) + ' kJ copied'); } }
+  else if (a === 'pdOpt') {
+    state.opt.constraint = 'wprime'; persist(); syncInputs();
+    computeAll();
+    if (!state.opt.auto) runOptimize(state.sel, gen, true).catch((e) => console.error(e));
+    renderOpt();
+    const p = $('#tss-opt'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   else if (a === 'share') shareLink();
   else if (a === 'csv') exportCsv();
   else if (a === 'reset') { if (confirm('Reset all inputs to the defaults?')) { state = clone(DEFAULTS); store.opt = {}; store.gear = {}; store.sens = {}; persist(); history.replaceState(null, '', location.pathname + location.search); syncInputs(); computeAll(); } }
