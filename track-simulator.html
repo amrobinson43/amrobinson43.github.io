@@ -373,6 +373,8 @@ footer { text-align: center; color: var(--muted); padding: 10px 0 20px; font-siz
           <section class="tss-panel" id="tss-sens"></section>
         </div>
 
+        <section class="tss-panel" id="tss-line"></section>
+
         <section class="tss-panel" id="tss-splits"></section>
 
         <section class="tss-panel" id="tss-gears">
@@ -458,6 +460,7 @@ function simulate(c, level, rec) {
   const dur = c.kind === 'time' ? c.dur : 0;
   const tLimit = dist ? 3 * 3600 : dur;
   const track = c.track, startS = c.startS || 0, hC = c.h, rho = c.rho, Crr = c.Crr;
+  const bendFx = c.bendFx !== false, dLine = Math.max(0, c.lineOff || 0);   // dLine: rider's line above the black line (m)
   const useW = c.Wp > 0 && c.CP > 0, Wp = c.Wp, CP = c.CP;
   const wcap = !!prof.wcap && useW;
   const PF = c.PF, seatF = c.seatF, tTr = c.tTr, cdaSt = c.cdaSt, cdaSe = c.cdaSe;
@@ -517,13 +520,17 @@ function simulate(c, level, rec) {
     if (!(Pp > 0)) Pp = 0;
     const cap = custom ? zeroForce : fEnv;
     const F = vv > 1e-9 ? Math.min(eta * Pp / vv, cap) : (Pp > 0 ? cap : 0);
-    let kk = 1, n = 1;
+    let kk = 1, n = 1, g = 1;
     if (track) {
-      const kap = track.curv(startS + xx);
-      if (kap > 0) {
-        const q = vv * vv * kap / G, rq = Math.sqrt(1 + q * q);
-        kk = 1 - hC * kap * (q / rq);             // CoM speed / wheel speed (lean in bends)
-        n = rq;                                   // tyre load / weight
+      const kb = track.curv(startS + xx);         // black-line curvature
+      if (kb > 0) {
+        g = 1 / (1 + dLine * kb);                 // black-line progress per metre ridden on a line dLine higher
+        const kap = kb * g;                       // curvature of the rider's (wider) line
+        if (bendFx) {
+          const q = vv * vv * kap / G, rq = Math.sqrt(1 + q * q);
+          kk = 1 - hC * kap * (q / rq);           // CoM speed / wheel speed (lean in bends)
+          n = rq;                                 // tyre load / weight
+        }
       }
     }
     const Fa = 0.5 * rho * cda * kk * kk * kk * vv * vv;
@@ -532,11 +539,11 @@ function simulate(c, level, rec) {
     let a = (F - Fa - Frr - Fb) / mEff;
     if (vv <= 0 && a < 0) a = 0;
     o.a = a; o.F = F; o.P = F * vv / eta; o.env = fEnv * vv / eta; o.cda = cda;
-    o.Fa = Fa; o.Frr = Frr; o.Fb = Fb; o.r = r;
+    o.Fa = Fa; o.Frr = Frr; o.Fb = Fb; o.r = r; o.g = g;
   }
 
   const o1 = {}, o2 = {};
-  let Ework = 0, Eaero = 0, Err = 0, Eb = 0;
+  let Ework = 0, Eaero = 0, Err = 0, Eb = 0, sPath = 0;
   let peakP = 0, peakT = 0, peakX = 0, peakV = 0, vmax = 0;
   let minW = Wp, wNegX = null, wNegT = null;
   let tCp = null, xCp = null, finished = false, dnf = false;
@@ -555,9 +562,9 @@ function simulate(c, level, rec) {
       R.cda.push(o1.cda); R.W.push(W); R.env.push(o1.env);
       nextRec = t + (t < 30 ? 0.05 : rec);
     }
-    const xp = x + v * dt, vp = Math.max(0, v + o1.a * dt);
+    const xp = x + v * o1.g * dt, vp = Math.max(0, v + o1.a * dt);
     drive(t + dt, xp, vp, W, o2);
-    const xn = x + 0.5 * (v + vp) * dt;
+    const xn = x + 0.5 * (v * o1.g + vp * o2.g) * dt;   // x is distance along the black line
     const vn = Math.max(0, v + 0.5 * (o1.a + o2.a) * dt);
     const Pm = 0.5 * (o1.P + o2.P);
     let frac = 1;
@@ -569,6 +576,7 @@ function simulate(c, level, rec) {
     Eaero += 0.5 * (o1.Fa * v + o2.Fa * vp) * h;
     Err += 0.5 * (o1.Frr * v + o2.Frr * vp) * h;
     Eb += 0.5 * (o1.Fb * v + o2.Fb * vp) * h;
+    sPath += 0.5 * (v + vp) * h;                         // distance actually ridden
     if (useW) {
       if (Pm > CP) W -= (Pm - CP) * h; else W += (CP - Pm) * (Wp - W) / Wp * h;
       if (W < minW) minW = W;
@@ -604,7 +612,7 @@ function simulate(c, level, rec) {
   if (dur && !dnf) finished = true;
   const T = dist ? t : dur;
   return {
-    T: dnf ? Infinity : T, tEnd: t, distance: x, finished, dnf,
+    T: dnf ? Infinity : T, tEnd: t, distance: x, sPath, finished, dnf,
     meanP: t > 0 ? Ework / t : 0, Ework, Eaero, Err, Eb,
     KE: 0.5 * mEff * v * v, Eloss: (1 - eta) * Ework,
     peakP, peakT, peakX, peakV, vmax, vEnd: v, cadEnd: v * k1 * c.cp,
@@ -752,7 +760,7 @@ const DEFAULTS = {
     riderMass: 80, bikeMass: 8, inertia: 0.14, tirePreset: '2096', tireCirc: 2096, crr: 0.0025, eta: 98,
     cdaSt: 0.32, cdaSe: 0.20, tTr: 1.0, seatF: 95,
     rhoMode: 'calc', tempC: 24, pressure: 1013, rh: 50, elev: 0, rhoDirect: 1.18,
-    bends: true, lap: 250, bendR: 23, trans: 10, comH: 0.95,
+    bends: true, lap: 250, bendR: 23, trans: 10, comH: 0.95, lineOff: 0,
     physio: false, CP: 400, Wp: 30, cpSrc: 'known',
     pd1t: 3, pd1p: 565, pd2t: 7, pd2p: 470, pd3t: 12, pd3p: 440, pd4t: 0, pd4p: 0
   },
@@ -826,7 +834,9 @@ const SECTIONS = [
     F('s.bendR', 'Bend radius (black line)', 'm', { step: 0.5, min: 10, max: 60 }),
     F('s.trans', 'Transition (spiral) length', 'm', { step: 1, min: 0, max: 40 }),
     F('s.comH', 'Centre-of-mass height', 'm', { step: 0.01, min: 0.3, max: 1.4, hint: 'Lean in the bends puts the body on a tighter, slower line than the wheels' }),
-    { type: 'html', id: 'trackInfo' }
+    { type: 'html', id: 'trackInfo' },
+    F('s.lineOff', 'Average line above the black line (bends)', 'cm', { step: 1, min: 0, max: 300, hint: 'How far above the black (measurement) line your wheels run through the bends, on average. 0 = perfect line. Race distance is always measured on the black line.' }),
+    { type: 'html', id: 'lineInfo' }
   ] },
   { id: 'phys', title: 'Physiology (optional)', open: false, tag: () => state.shared.physio ? 'on' : 'off', fields: [
     F('s.physio', 'Use CP / W′ (W′ balance & limits)', '', { type: 'check' }),
@@ -1035,7 +1045,9 @@ function buildCfg(key) {
   const D = CR / cog * circ;
   const rw = circ / (2 * Math.PI);
   const m = cl(S.riderMass, 20, 200, 80) + cl(S.bikeMass, 3, 30, 8);
-  const track = S.bends ? makeTrack(cl(S.lap, 100, 500, 250), cl(S.bendR, 5, 80, 23), cl(S.trans, 0, 60, 10), 6) : null;
+  // Geometry is always built (it sets how much a wider line costs); lean / tyre-load physics only when "bends" is on
+  const track = makeTrack(cl(S.lap, 100, 500, 250), cl(S.bendR, 5, 80, 23), cl(S.trans, 0, 60, 10), 6);
+  const lineOff = cl(S.lineOff, 0, 500, 0) / 100;
   const unit = E.upUnit;
   const split = def.split || (kind === 'time' ? 1000 : dist <= 1500 ? 125 : dist <= 6000 ? 250 : 1000);
   const ph = physioVals();
@@ -1046,7 +1058,7 @@ function buildCfg(key) {
     cdaSt: cl(S.cdaSt, 0.05, 1.5, 0.32), cdaSe: cl(S.cdaSe, 0.05, 1.5, 0.2),
     tTr: cl(S.tTr, 0, 20, 1), seatF: cl(S.seatF, 30, 120, 95) / 100,
     PF: cl(E.PF, 50, 5000, 1000), cp: cl(E.cp, 20, 250, 100), h: cl(S.comH, 0, 1.6, 0.95),
-    track, trackBad: !!S.bends && !track, startS: track ? (E.start === 'pursuit' ? track.pursuit : track.finish) : 0,
+    track, bendFx: !!S.bends, lineOff, trackBad: (!!S.bends || lineOff > 0) && !track, startS: track ? (E.start === 'pursuit' ? track.pursuit : track.finish) : 0,
     standMode: unit === 'm' ? 'dist' : unit === 'revs' ? 'revs' : 'time', standVal: cl(E.upVal, 0, 1e5, 5),
     CP: ph.CP, Wp: ph.Wp,
     prof: buildProfile(E), splitStep: split, target: cl(E.Pavg, 10, 5000, 400)
@@ -1057,7 +1069,7 @@ const recDtFor = (s) => Math.max(0.1, ((s && s.tEnd) || 60) / 1400);
 /* ===================== Computation ===================== */
 let results = {};
 const lastLevel = {};
-const store = { opt: {}, gear: {}, sens: {} };
+const store = { opt: {}, gear: {}, sens: {}, line: {} };
 let gen = 0;
 
 function sigFor(key) { return JSON.stringify([state.shared, state.events[key], state.opt.constraint, state.opt.optStand, state.opt.floor]); }
@@ -1078,7 +1090,7 @@ function computeEvent(key) {
   if (sol.ok && cons !== 'none') lastLevel[lk] = sol.level;
   const sim = simulate(c, sol.level, recDtFor(sol.s));
   const tgt = fmt(c.target) + ' W';
-  if (c.trackBad) warn.push(['warning', '<b>Velodrome geometry is impossible</b> (the bends don’t fit in the lap). Bend effects are off until it is fixed.']);
+  if (c.trackBad) warn.push(['warning', '<b>Velodrome geometry is impossible</b> (the bends don’t fit in the lap). Bend effects and the line above the black line are ignored until it is fixed.']);
   if (c.prof.empty) warn.push(['warning', '<b>No power data yet.</b> Paste 1-second power values into the custom curve box.']);
   if (!sol.ok && cons === 'mean') {
     if (sol.res > 0) warn.push(['serious', '<b>Target average is too low for this start.</b> Even backing right off after the start can’t bring the mean down to ' + tgt + ' (achieved ' + fmt(sim.meanP) + ' W). Lower the peak power or peak-power cadence, shorten τ, or raise the target.']);
@@ -1133,10 +1145,40 @@ function scheduleBackground() {
   bgTimer = setTimeout(async () => {
     try {
       await runSensitivity(state.sel, myGen);
+      await runLine(state.sel, myGen);
       const st = store.opt[state.sel];
       if (state.opt.auto && !(st && st.sig === sigFor(state.sel))) await runOptimize(state.sel, myGen);
     } catch (e) { if (e.message !== 'cancelled') console.error(e); }
   }, 450);
+}
+
+/* Black-line cost: re-run the event with the rider's line d metres above the black line, same pacing rule */
+const LINE_OFFS = [0.05, 0.10, 0.20, 0.30, 0.50, 0.65];
+async function runLine(key, myGen) {
+  const base = results[key];
+  if (!base || base.sim.dnf || base.c.prof.empty || !base.c.track) { renderLine(); return; }
+  const sig = sigFor(key);
+  if (store.line[key] && store.line[key].sig === sig) { renderLine(); return; }
+  const c0 = base.c, isDist = c0.kind === 'dist';
+  const run = (d) => {
+    const c = Object.assign({}, c0, { lineOff: d, prof: Object.assign({}, c0.prof) });
+    return solveLevel(c, c0.target, base.cons, base.sol.level).s;
+  };
+  const zero = c0.lineOff > 0 ? run(0) : base.sim;
+  if (gen !== myGen) throw new Error('cancelled');
+  const offs = LINE_OFFS.slice();
+  if (c0.lineOff > 0 && !offs.some((d) => Math.abs(d - c0.lineOff) < 1e-6)) offs.push(c0.lineOff);
+  offs.sort((a, b) => a - b);
+  const rows = [];
+  for (const d of offs) {
+    await yieldNow();
+    if (gen !== myGen) throw new Error('cancelled');
+    const s = Math.abs(d - c0.lineOff) < 1e-6 ? base.sim : run(d);
+    rows.push({ d, extra: s.sPath - s.distance, dv: isDist ? s.T - zero.T : s.distance - zero.distance, mine: Math.abs(d - c0.lineOff) < 1e-6 });
+  }
+  if (gen !== myGen) throw new Error('cancelled');
+  store.line[key] = { sig, rows, zero: { T: zero.T, distance: zero.distance }, isDist, laps: zero.distance / c0.track.L };
+  renderLine();
 }
 
 async function runSensitivity(key, myGen) {
@@ -1540,7 +1582,11 @@ function updateReadouts() {
   set('massInfo', 'System mass <b>' + fmt(c.m, 1) + ' kg</b> · effective (with wheel inertia) ' + fmt(c.mEff, 1) + ' kg');
   set('rhoInfo', 'ρ = <b>' + fmt(c.rho, 4) + ' kg/m³</b>' + (S.rhoMode !== 'direct' ? ' (moist air)' : ''));
   const tr = c.track;
-  set('trackInfo', S.bends ? (tr ? 'Straights ' + fmt(tr.S, 1) + ' m · bends ' + fmt(tr.B, 1) + ' m each. Lean at 60 km/h: ' + fmt(Math.atan((60 / 3.6) ** 2 / tr.R / G) * 180 / Math.PI, 0) + '°' : '<b>Bends don’t fit in this lap length.</b> Reduce radius or transition.') : 'Bend effects off: straight-line physics.');
+  set('trackInfo', !tr ? '<b>Bends don’t fit in this lap length.</b> Reduce radius or transition.' : 'Straights ' + fmt(tr.S, 1) + ' m · bends ' + fmt(tr.B, 1) + ' m each. ' + (S.bends ? 'Lean at 60 km/h: ' + fmt(Math.atan((60 / 3.6) ** 2 / tr.R / G) * 180 / Math.PI, 0) + '°' : 'Bend effects off: no lean or tyre-load physics (lap geometry is still used for the line cost).'));
+  const lo = c.lineOff, laps = c.kind === 'dist' ? c.dist / (tr ? tr.L : S.lap) : null;
+  set('lineInfo', !tr ? 'Fix the lap geometry to model your line.' : lo > 0
+    ? 'Riding ' + fmt(lo * 100) + ' cm high adds <b>2π × ' + fmt(lo, 2) + ' m = ' + fmt(2 * Math.PI * lo, 2) + ' m per lap</b>' + (laps ? ' (' + fmt(2 * Math.PI * lo * laps, 1) + ' m over this ' + esc(EVENTS[state.sel].name) + ')' : '') + '. The results include it; see <b>Black-line cost</b> for the time.'
+    : 'On the black line. Every 10 cm higher through the bends adds ' + fmt(2 * Math.PI * 0.1, 2) + ' m per lap. See <b>Black-line cost</b> in the results.');
   if (pdShow()) set('pdInfo', pdInfoHtml(c));
   set('physInfo', S.physio ? (S.cpSrc === 'pd' ? 'Simulating with <b>CP ' + fmt(c.CP) + ' W</b> and <b>W′ ' + fmt(c.Wp / 1000, 1) + ' kJ</b>. ' : '') + 'W′ balance uses the Skiba differential model. CP/W′ curves and the CP / W′ optimiser also cap available power by W′ (Morton 3-parameter).' : 'Switch on to track W′ balance, flag unsustainable plans and unlock the W′ curves and optimiser. If you don’t know your CP and W′, you can fit them to your best efforts.');
   for (const s of SECTIONS) { const t = $('[data-tag="' + s.id + '"]'); if (t) t.textContent = s.tag ? s.tag() : ''; }
@@ -1803,6 +1849,30 @@ function renderEnergy() {
     '<p class="tss-small" style="margin-top:8px">Average W/CdA (seated) ' + fmt(wcda) + ' · W/kg ' + fmt(s.meanP / state.shared.riderMass, 2) + (isDist ? '' : ' · ' + fmt(s.distance / 1000 / (r.c.dur / 3600), 2) + ' km/h average') + '. Energy balance closes to ' + fmt(Math.abs(r.c.eta * s.Ework - s.Eaero - s.Err - s.Eb - s.KE), 1) + ' J.</p>';
 }
 
+function renderLine() {
+  const host = $('#tss-line');
+  const r = results[state.sel];
+  const title = '<h2>Black-line cost</h2>';
+  if (!r) { host.innerHTML = title; return; }
+  if (!r.c.track) { host.innerHTML = title + '<p class="tss-small">The velodrome geometry is impossible (the bends don’t fit in the lap), so the line can’t be modelled. Fix it under Velodrome.</p>'; return; }
+  if (r.c.prof.empty || r.sim.dnf) { host.innerHTML = title + '<p class="tss-small">Needs a valid run of this event.</p>'; return; }
+  const st = store.line[state.sel];
+  if (!st || st.sig !== sigFor(state.sel)) { host.innerHTML = title + '<p class="tss-small">Computing…</p>'; return; }
+  const isDist = st.isDist, ev = EVENTS[state.sel].name;
+  const cost = (v) => isDist ? fmtSigned(v, 3, ' s') : fmtSigned(v, 0, ' m');
+  const perLap = (v) => isDist ? fmtSigned(v / st.laps, 3, ' s') : fmtSigned(v / st.laps, 2, ' m');
+  const lbl = (d) => fmt(d * 100) + ' cm' + (Math.abs(d - 0.65) < 1e-6 ? ' (red sprinters’ line)' : '');
+  const mine = st.rows.find((x) => x.mine);
+  let h = title + '<p class="tss-small">Race distance is measured on the black line, 20 cm above the inside edge. Ride higher through the bends and you cover more ground: <b>2π × the height</b> extra every lap. Almost all of the cost is that extra distance; the gentler bend (less lean, lighter tyre load) changes it by well under 1 %. Each row re-runs this ' + esc(ev) + ' with the same ' + (r.cons === 'mean' ? 'target average power' : 'pacing rule') + ' and everything else fixed.</p>';
+  if (mine) {
+    h += '<p style="margin:8px 0">Your line, <b>' + fmt(mine.d * 100) + ' cm</b> above the black line, ' + (isDist ? 'costs <b>' + cost(mine.dv) + '</b>' : 'costs <b>' + fmt(-mine.dv, 0) + ' m</b> of official distance') + ' against riding exactly on it (' + (isDist ? fmtTime(st.zero.T) : fmt(st.zero.distance / 1000, 3) + ' km') + '). You ride ' + fmt(mine.extra, 1) + ' m extra, which is ' + (isDist ? fmt(mine.dv / st.laps, 3) + ' s' : fmt(-mine.dv / st.laps, 2) + ' m') + ' per lap.</p>';
+  }
+  h += '<div class="tss-tablewrap"><table class="tss-table"><thead><tr><th>Height above black line</th><th>Extra ridden</th><th>' + (isDist ? 'Time lost' : 'Official distance') + '</th><th>Per lap</th></tr></thead><tbody>' +
+    st.rows.map((x) => '<tr' + (x.mine ? ' style="font-weight:700"' : '') + '><td>' + lbl(x.d) + (x.mine ? ' · yours' : '') + '</td><td>' + fmt(x.extra, 1) + ' m</td><td>' + cost(x.dv) + '</td><td>' + perLap(x.dv) + '</td></tr>').join('') +
+    '</tbody></table></div><p class="tss-small" style="margin-top:8px">Rule of thumb on this track: every 10 cm of height costs ' + fmt(2 * Math.PI * 0.1, 2) + ' m per lap. Straights are assumed parallel to the black line; drifting up and down on the straights adds a little more.</p>';
+  host.innerHTML = h;
+}
+
 function renderSens() {
   const host = $('#tss-sens');
   const st = store.sens[state.sel];
@@ -1870,6 +1940,7 @@ function renderMethods() {
     <li><b>η</b>: drivetrain efficiency. <b>P</b> is crank power.</li>
     <li><b>CdA</b> is the standing value until you sit, then blends linearly to the seated value over the transition time.</li>
     <li><b>Bends</b> (optional): lean angle θ = atan(v²κ/g) puts the centre of mass on a tighter line, so the body moves at <code>k·v</code> with <code>k = 1 − h·κ·sinθ</code>. Drag power uses that slower speed. Tyre load rises by <code>n = √(1+(v²κ/g)²)</code>, which scales rolling resistance. The lap uses straights, cosine-spiral transitions and constant-radius arcs.</li>
+    <li><b>Your line</b>: distance is measured on the black line, but you can ride a line <code>d</code> above it through the bends. That line is parallel to the black line, so its curvature is <code>κ/(1 + dκ)</code>, and each metre ridden advances you <code>1/(1 + dκ)</code> m along the black line. Over a lap that adds exactly <code>2πd</code>. The simulator integrates speed along your line and progress along the black line, so the time cost also includes the gentler bend, though that effect is tiny. The Black-line cost panel re-runs the event at several heights.</li>
     <li><b>Bearings</b>: <code>F = 0.091 + 0.0087·v</code> N (Dahn et al., as used by Martin et al. 1998).</li>
     <li><b>Air density</b> uses moist air (Buck vapour pressure) from temperature, station pressure and humidity.</li>
   </ul>
@@ -1898,6 +1969,7 @@ function renderAll() {
   renderOpt();
   renderEnergy();
   renderSens();
+  renderLine();
   renderSplits();
   renderGears();
 }
@@ -1950,7 +2022,7 @@ root.addEventListener('click', (ev) => {
   }
   else if (a === 'share') shareLink();
   else if (a === 'csv') exportCsv();
-  else if (a === 'reset') { if (confirm('Reset all inputs to the defaults?')) { state = clone(DEFAULTS); store.opt = {}; store.gear = {}; store.sens = {}; persist(); history.replaceState(null, '', location.pathname + location.search); syncInputs(); computeAll(); } }
+  else if (a === 'reset') { if (confirm('Reset all inputs to the defaults?')) { state = clone(DEFAULTS); store.opt = {}; store.gear = {}; store.sens = {}; store.line = {}; persist(); history.replaceState(null, '', location.pathname + location.search); syncInputs(); computeAll(); } }
 });
 root.addEventListener('keydown', (ev) => {
   const card = ev.target.closest && ev.target.closest('[data-ev]');
@@ -2007,7 +2079,7 @@ function consumeLink() {
 window.addEventListener('hashchange', () => {
   if (!/[#&]s=/.test(location.hash)) return;
   state = loadState();
-  store.opt = {}; store.gear = {}; store.sens = {};
+  store.opt = {}; store.gear = {}; store.sens = {}; store.line = {};
   syncInputs(); computeAll(); consumeLink();
 });
 renderInputs();
